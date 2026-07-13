@@ -9,7 +9,6 @@
 - [데이터베이스 ERD 설계서 (ERD.md)](./ERD.md)
 - [REST API 상세 명세서 (API.md)](./API.md)
 - [프로젝트 공통 컨벤션 (CONVENTION.md)](./CONVENTION.md)
-- [개발 도움말 (HELP.md)](./HELP.md)
 
 ---
 
