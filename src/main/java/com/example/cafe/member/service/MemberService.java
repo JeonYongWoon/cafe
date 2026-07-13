@@ -7,6 +7,7 @@ import com.example.cafe.member.dto.MemberSignupRequest;
 import com.example.cafe.member.dto.MemberSignupResponse;
 import com.example.cafe.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public MemberSignupResponse signup(MemberSignupRequest request) {
@@ -25,7 +27,7 @@ public class MemberService {
 
         Member member = Member.builder()
                 .username(request.getUsername())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .pointBalance(0L)
                 .build();
 

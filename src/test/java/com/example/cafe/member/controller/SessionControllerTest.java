@@ -1,8 +1,8 @@
 package com.example.cafe.member.controller;
 
-import com.example.cafe.member.dto.MemberSignupRequest;
-import com.example.cafe.member.dto.MemberSignupResponse;
-import com.example.cafe.member.service.MemberService;
+import com.example.cafe.member.dto.SessionCreateRequest;
+import com.example.cafe.member.dto.SessionCreateResponse;
+import com.example.cafe.member.service.SessionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,37 +21,37 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
-class MemberControllerTest {
+class SessionControllerTest {
 
     private MockMvc mockMvc;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Mock
-    private MemberService memberService;
+    private SessionService sessionService;
 
     @InjectMocks
-    private MemberController memberController;
+    private SessionController sessionController;
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(memberController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
     }
 
     @Test
-    void signupSuccess() throws Exception {
-        MemberSignupRequest request = new MemberSignupRequest("user123", "securepassword");
-        MemberSignupResponse response = MemberSignupResponse.builder()
+    void loginSuccess() throws Exception {
+        SessionCreateRequest request = new SessionCreateRequest("user123", "securepassword");
+        SessionCreateResponse response = SessionCreateResponse.builder()
                 .memberId(1L)
                 .username("user123")
                 .build();
 
-        when(memberService.signup(any(MemberSignupRequest.class))).thenReturn(response);
+        when(sessionService.login(any(SessionCreateRequest.class))).thenReturn(response);
 
-        mockMvc.perform(post("/members")
+        mockMvc.perform(post("/sessions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.username").value("user123"))
                 .andExpect(jsonPath("$.data.memberId").value(1))

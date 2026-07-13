@@ -5,7 +5,8 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ErrorCode {
-    DUPLICATE_USERNAME(HttpStatus.BAD_REQUEST, "DUPLICATE_USERNAME", "이미 사용 중인 아이디입니다.");
+    DUPLICATE_USERNAME(HttpStatus.BAD_REQUEST, "DUPLICATE_USERNAME", "이미 사용 중인 아이디입니다."),
+    INVALID_CREDENTIALS(HttpStatus.BAD_REQUEST, "INVALID_CREDENTIALS", "아이디 또는 비밀번호가 일치하지 않습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

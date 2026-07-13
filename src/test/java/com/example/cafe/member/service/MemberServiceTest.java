@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -23,6 +24,9 @@ class MemberServiceTest {
     @Mock
     private MemberRepository memberRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private MemberService memberService;
 
@@ -31,11 +35,12 @@ class MemberServiceTest {
         MemberSignupRequest request = new MemberSignupRequest("user123", "securepassword");
         Member member = Member.builder()
                 .username("user123")
-                .password("securepassword")
+                .password("encoded_password")
                 .pointBalance(0L)
                 .build();
 
         when(memberRepository.existsByUsername("user123")).thenReturn(false);
+        when(passwordEncoder.encode("securepassword")).thenReturn("encoded_password");
         when(memberRepository.save(any(Member.class))).thenReturn(member);
 
         MemberSignupResponse response = memberService.signup(request);
