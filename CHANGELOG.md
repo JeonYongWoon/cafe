@@ -1,26 +1,139 @@
 # 변경 이력 (CHANGELOG)
 
+---
+
 ## 2026-07-14
 
-### 추가
-- 커피 메뉴 목록 조회 API 구현
-  - GET /menus 엔드포인트를 제공하는 MenuController 구현
+### 15:34 | Trace ID 기반 로깅 규칙 정의 (AGENTS.md, CONVENTION.md)
+* **[RULE]** 공통 추적 식별자(Trace ID) 로깅 가이드 추가
+  - 컨텍스트 간의 비동기 호출 전파 및 다중 컨텍스트 트랜잭션 진행 상황을 로그상에서 역추적할 수 있도록, 공통 추적 식별자(Trace ID)를 로그 메시지에 반드시 매핑하도록 규정했습니다.
+  - 이를 보장하기 위해 멀티 스레드 및 비동기 구간 전파 시 MDC(Mapped Diagnostic Context)를 활용하여 추적 식별자가 유지되도록 명문화했습니다.
+
+---
+
+### 15:32 | API 버저닝 접두사 관련 라우팅 예외 반영 (AGENTS.md, CONVENTION.md)
+* **[RULE]** 버전 접두사 예외 필터링 규칙 도입
+  - API 경로 선두에 `/api/v1` 등의 공통 버전 접두사가 지정될 경우, 이를 건너뛰고(필터링) 그 뒤에 따라오는 비즈니스 도메인 명(예: `/api/v1/menus` -> `menus`)을 기준으로 첫 번째 세그먼트(컨텍스트명)를 인식하도록 라우팅 예외 조항을 추가했습니다.
+
+---
+
+### 15:29 | 규칙 개정 및 4차 피드백 반영 (AGENTS.md, CONVENTION.md)
+* **[RULE]** JPA 엔티티 동등성(Equality) 비교 규칙 수립
+  - 식별자(ID) 필드만을 동등성 비교의 기준으로 삼기 위해 `@EqualsAndHashCode(onlyExplicitlyIncluded = true)` 및 PK 식별자 필드 `@EqualsAndHashCode.Include` 지정을 의무화했습니다.
+* **[RULE]** 엔티티 기본 생성자 캡슐화 제약 구체화
+  - JPA 지연 로딩 프록시를 보장하면서 외부 인스턴스 남발을 막기 위해 `@NoArgsConstructor(access = AccessLevel.PROTECTED)` 설정을 룰에 명시했습니다.
+* **[RULE]** 에러 응답 포맷 DTO 검증 실패(details) 정보 확장
+  - 유효성 검증 예외 발생 시 구체적인 오류 필드와 원인을 배열 형식으로 전달하는 `details` 구조를 실패 JSON 응답 포맷에 추가했습니다.
+* **[RULE]** 타 컨텍스트 서비스 직접 참조 차단
+  - Bounded Context 간 서비스 구현체의 직접 의존 주입을 금지하고, 파사드(Facade) 계층 또는 전용 이벤트를 활용하도록 설계적 의존 제약을 추가했습니다.
+* **[RULE]** 동사형 URI 설계에 대한 예외 허용 기준 수립
+  - 프로세스 처리를 동사 리소스로 표현할 수 있는 예외적 경계(충전, 취소 등)를 명시하고 그 외에는 RESTful 원칙을 준수하도록 명문화했습니다.
+* **[RULE]** Git 커밋 타입 세분화
+  - 테스트 코드 추가/수정의 명확한 기록 추적을 위해 `test:` 커밋 타입을 신설했습니다.
+
+---
+
+### 15:26 | 아키텍처 규칙 보완 및 3차 피드백 반영 (AGENTS.md)
+* **[RULE]** 식별자 직접 참조 가이드 추가
+  - Bounded Context 간의 직접 객체 참조 매핑을 방지하고 식별자 직접 참조(`Long memberId` 등) 방식을 기본 설계 원칙으로 명시했습니다.
+* **[RULE]** 트랜잭션 분리 표준화 조항 구체화
+  - Spring Application Event 기반의 비동기 리스너 구성을 기본 표준으로 지정하고, 특수 정합성 보장 영역에 한해 `Propagation.REQUIRES_NEW` 방식을 사용하도록 규칙을 보강했습니다.
+* **[RULE]** 가독성 미세 개선
+  - `AGENTS.md` 내부에 불필요하게 존재하던 줄바꿈 공백들을 정돈했습니다.
+
+---
+
+### 15:24 | 아키텍처 및 예외 처리 규칙 강화
+* **[RULE]** 예외 처리 에러 코드 규칙 신설 (AGENTS.md)
+  - 회원(`MEMBER_`), 포인트(`POINT_`), 주문(`ORDER_`), 시스템(`SYSTEM_`) 등 도메인별 일관된 에러 코드 접두사를 할당하는 규칙을 명문화했습니다.
+* **[RULE]** 트랜잭션 바운더리 규칙 신설 (AGENTS.md)
+  - 컨텍스트 간 직접 결합을 방지하고 트랜잭션 분할을 보장하기 위해 `REQUIRES_NEW` 전파 속성 지정 또는 비동기(`Async`) 처리를 적용하도록 규정했습니다.
+* **[RULE]** 규칙 문서 시인성 대폭 개선
+  - `AGENTS.md` 전체 레이아웃에 구분선과 정렬 형식을 추가하여 규정 가독성을 대폭 향상시켰습니다.
+
+---
+
+### 15:15 | 회원 상세 조회 기능 및 2차 피드백 반영
+* **[API]** 회원 상세 및 포인트 조회 구현
+  - GET `/members/{memberId}` 엔드포인트를 제공하는 MemberController 구현
+  - memberId 미존재 시 MEMBER_NOT_FOUND 예외 반환
+  - 회원 정보 및 포인트 잔액을 반환하는 MemberService 구현
+  - 데이터베이스 PK 식별자를 API 명세에 맞추어 memberId로 응답하는 MemberResponse DTO 구현
+  - 에러 핸들링을 위한 ErrorCode.MEMBER_NOT_FOUND 상수 추가
+* **[TEST]** 회원 상세 조회 단위 테스트 작성
+  - MemberServiceTest: 회원 상세 조회 성공 시 DTO 반환 여부와 실패 시 예외 발생 검증
+  - MemberControllerTest: GET 호출 성공 응답 구조 및 예외 발생 시 에러 응답 포맷 검증
+* **[REFRACTOR]** 2차 리뷰 피드백 보완
+  - MemberController 파라미터에 @Validated 및 @Positive 어노테이션을 적용하여 입력값 유효성 검증 적용
+  - 유효성 검증 적용을 위해 spring-boot-starter-validation 라이브러리 의존성 추가 (build.gradle)
+  - MemberResponse DTO 내 Null NPE 예방을 위한 방어 코드 추가
+  - MemberControllerTest mockMvc 경로를 파라미터 바인딩 형식으로 수정
+
+---
+
+### 15:06 | 커피 메뉴 목록 조회 기능 구현
+* **[API]** 커피 메뉴 목록 조회 구현
+  - GET `/menus` 엔드포인트를 제공하는 MenuController 구현
   - AVAILABLE 및 SOLD_OUT 상태의 메뉴 데이터를 조회하여 DTO로 매핑하는 MenuService 구현
-  - 데이터베이스 PK 식별자(id)를 API 스펙 명세에 맞춘 menuId로 매핑하는 MenuResponse DTO 구현
+  - 데이터베이스 PK 식별자를 menuId로 매핑하는 MenuResponse DTO 구현
   - 특정 메뉴 상태 목록으로 필터링 조회가 가능한 findAllByStatusIn 쿼리 메서드를 정의한 MenuRepository 구현
-- 커피 메뉴 목록 조회 API 단위 테스트 구현
-  - MenuServiceTest 구현: AVAILABLE 및 SOLD_OUT 상태 메뉴 데이터 조회 정합성 검증
-  - MenuControllerTest 구현: GET /menus 호출 시 성공 응답 JSON 구조 및 데이터 형식 정합성 검증
-- 회원 상세 및 잔여 포인트 조회 API 구현
-  - GET /members/{memberId} 엔드포인트를 제공하는 MemberController 구현
-  - memberId가 존재하지 않을 시 MEMBER_NOT_FOUND 예외를 던지며, 조회 시 회원 정보 및 실시간 포인트 잔액을 반환하는 MemberService 구현
-  - 데이터베이스 PK 식별자(id)를 API 스펙에 맞춘 memberId로 매핑하는 MemberResponse DTO 구현
-  - 존재하지 않는 회원 조회 시 에러 처리를 위한 ErrorCode.MEMBER_NOT_FOUND 상수 추가
-- 회원 상세 및 잔여 포인트 조회 API 단위 테스트 구현
-  - MemberServiceTest 구현: 회원 상세 및 잔여 포인트 조회 성공 시 DTO 반환 여부와 실패 시 예외 발생 여부 검증
-  - MemberControllerTest 구현: GET /members/{memberId} 성공 시 응답 포맷 검증 및 예외 발생 시 에러 응답 포맷 검증
-- 회원 상세 및 잔여 포인트 조회 API 2차 리뷰 피드백 반영
-  - MemberController 및 memberId 파라미터에 @Validated 및 @Positive 유효성 검증 어노테이션 적용
-  - 유효성 검증 적용을 위한 spring-boot-starter-validation 라이브러리 추가 (build.gradle)
-  - MemberResponse DTO 내 Null 가드 절 구현을 통한 NullPointerException 예방
-  - MemberControllerTest 내 mockMvc 경로 표현식을 파라미터화(get("/members/{memberId}", 1L))하도록 개선
+* **[TEST]** 커피 메뉴 목록 조회 단위 테스트 작성
+  - MenuServiceTest: AVAILABLE 및 SOLD_OUT 상태 메뉴 데이터 조회 정합성 검증
+  - MenuControllerTest: GET /menus 호출 시 성공 응답 JSON 구조 및 데이터 형식 정합성 검증
+
+---
+
+### 14:54 | 도메인 아키텍처 규칙 설정
+* **[RULE]** Bounded Context 아키텍처 가이드 반영
+  - `order` 패키지만 `member`, `menu`, `point` 패키지를 참조할 수 있도록 의존성 방향 단방향 제한 (순환 참조 방지)
+  - API 경로의 첫 세그먼트로 도메인 컨텍스트명을 명시하도록 강제하는 '컨텍스트 라우팅 규칙' 수립
+  - 컨트롤러 내 비즈니스 로직 포함을 금지하고 서비스로 위임하도록 컨트롤러의 책임 제한
+
+---
+
+## 2026-07-13
+
+### 17:59 | 에이전트 소통 및 계획서 제출 룰 강화
+* **[RULE]** 작업 방식 및 승인 룰 제정
+  - 에이전트 답변의 영어 출력을 전면 차단하는 '한국어 사용 절대 원칙' 추가
+  - 대화방 가독성을 확보하기 위해 변경 소스 코드를 본문에 직접 기재하는 행위 금지
+  - 계획서 제출 시 사용자 승인 버튼("Proceed")이 나타나도록 도구 옵션의 RequestFeedback 지정을 의무화
+
+---
+
+### 15:43 | 협업을 위한 코드 리뷰 컨벤션 반영
+* **[RULE]** 피드백 강도 표기법(Pn Rule) 제정
+  - 피드백의 긴급성과 중요도를 명확히 하여 의사소통 비효율성을 해소하는 P1 ~ P5 수준의 태그 규정
+  - 작업 요청자의 자가 검토(Self-Review) 및 변경 맥락(Why/What/How) 작성 요령 수립
+
+---
+
+## 향후 작업 계획 (TODO)
+
+### 1. 포인트 충전 API 구현
+- [ ] **[API]** 포인트 충전 API 구현 (`POST /points/charge`)
+- [ ] **[LOCK]** 낙관적 락(Optimistic Lock)을 활용한 포인트 동시 충전/차감 정합성 검증
+- [ ] **[TEST]** 포인트 충전 성공 단위 테스트 및 다중 스레드 기반 동시 충전 통합 테스트 작성
+
+### 2. 주문 및 결제 API 구현
+- [ ] **[API]** 커피 주문 및 결제 API 구현 (`POST /orders`)
+- [ ] **[SERVICE]** 주문 건 생성 및 포인트 차감 정책 연계
+- [ ] **[SYSTEM]** 결제 완료 후 외부 플랫폼으로 실시간 데이터 전송 모듈 구현
+- [ ] **[TEST]** 주문 결제 성공, 잔액 부족 실패 케이스 및 다중 결제 동시성 검증 테스트 작성
+
+### 3. 주문 상세 조회 API 구현
+- [ ] **[API]** 주문 상세 조회 API 구현 (`GET /orders/{orderId}`)
+- [ ] **[TEST]** 영수증 단건 반환 및 개별 매핑 정합성 테스트 작성
+
+### 4. 인기 메뉴 조회 API 구현
+- [ ] **[API]** 인기 메뉴 목록 조회 API 구현 (`GET /menus/popular`)
+- [ ] **[QUERY]** 최근 7일 동안의 주문 데이터를 group by 통계로 산출하는 DB 쿼리 구현
+- [ ] **[TEST]** 일주일 주문 통계가 정상적으로 필터링되어 출력되는지 검증 테스트 작성
+
+### 5. [관리자] 전체 주문 조회 API 구현
+- [ ] **[API]** 전체 주문 목록 조회 API 구현 (`GET /admin/orders`)
+- [ ] **[TEST]** 전체 데이터가 최신순으로 잘 출력되는지 검증 테스트 작성
+
+### 6. [관리자] 주문 상태 변경 API 구현
+- [ ] **[API]** 주문 상태 변경 API 구현 (`PATCH /orders/{orderId}/status`)
+- [ ] **[TEST]** 허용되지 않는 상태 전이 차단 및 올바른 상태 업데이트 비즈니스 정합성 테스트 작성

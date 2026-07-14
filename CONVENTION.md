@@ -1,6 +1,7 @@
-# 📜 jeonscafe 프로젝트 공통 컨벤션
+# jeonscafe 프로젝트 공통 컨벤션
 
 ## 1. 코드 컨벤션 (Code Convention)
+
 * **Java 버전**: Java 17 표준 문법을 준수합니다.
 * **들여쓰기(Indent)**: 4 Space 들여쓰기를 사용합니다. (Tab 대신 Space 권장)
 * **Lombok 사용 가이드라인 (부작용 방지)**:
@@ -14,14 +15,21 @@
      * `@Data`는 `@Getter`, `@Setter`, `@ToString` 등을 한 번에 생성해 주는 종합 선물 세트이지만, JPA 엔티티 객체에서 사용 시 큰 부작용이 있습니다.
      * 서로 참조하는 관계(예: 회원과 주문 목록)에서 `@Data`가 제공하는 `@ToString`이나 `@EqualsAndHashCode`를 자동 호출하면 **서로를 계속 호출하는 무한 루프에 빠져 서버가 멈추게(StackOverflowError) 됩니다.**
      * 엔티티 클래스에는 필요한 기능만 꺼내어 개별 애너테이션(`@Getter`, `@NoArgsConstructor` 등)으로 설정합니다.
+     * 특히 지연 로딩(Lazy Loading) 및 프록시 기술 지원을 보장하기 위해 엔티티의 기본 생성자는 애너테이션을 사용할 때 `@NoArgsConstructor(access = AccessLevel.PROTECTED)` 지정을 의무화합니다.
   
   3. **`@AllArgsConstructor` 사용 제한 (매개변수 순서 오염 방지)**:
      * 모든 필드를 인자로 받는 생성자를 만들면, 클래스의 멤버 변수 선언 순서를 바꿨을 때 자바 컴파일 에러가 나지 않고 그대로 엉뚱한 필드에 데이터가 대입되어 대형 버그를 만듭니다.
      * 대신 꼭 필요한 필수 인자만 받는 생성자(`@RequiredArgsConstructor` 활용)를 쓰거나 `Builder 패턴`을 적극 활용합니다.
 
+  4. **JPA 엔티티 동등성(Equality) 비교 규칙**:
+     * 롬복의 기본 `@EqualsAndHashCode`를 클래스에 그대로 적용하면 객체의 모든 필드를 비교하게 되어, 영속화되지 않은 상태이거나 지연 로딩 대상 필드를 순회할 때 예기치 않은 쿼리 실행 또는 성능 문제를 유발합니다.
+     * 따라서 엔티티의 동등성 비교는 데이터베이스 식별자(ID) 필드만을 활용해야 하며, 직접 커스텀 `equals()`와 `hashCode()`를 정의하여 비교 범위가 식별자로 국한되도록 제한해야 합니다.
+     * 롬복을 사용할 경우 `@EqualsAndHashCode(onlyExplicitlyIncluded = true)` 선언 후 PK 식별자 필드에만 `@EqualsAndHashCode.Include`를 명시하는 방식으로 규정합니다.
+
 ---
 
 ## 2. 네이밍 규칙 (Naming Convention)
+
 * **패키지명**: 소문자 단수형 사용을 원칙으로 합니다. (예: `com.example.jeonscafe.order`)
 * **클래스 및 인터페이스**: PascalCase를 사용합니다. (예: `OrderService`, `MenuRepository`)
 * **메서드 및 변수**: camelCase를 사용합니다. (예: `chargePoint()`, `menuList`)
@@ -34,6 +42,7 @@
 ---
 
 ## 3. Git 및 커밋 컨벤션 (Git Convention)
+
 * **브랜치 전략**: 
   * 기본 개발은 `main` 브랜치를 기준으로 하며, 기능 개발 시 `feature/{기능명}` 형식을 사용합니다. (예: `feature/charge-point`)
 * **커밋 메시지 포맷**: `type: 내용` 형식을 따릅니다.
@@ -42,15 +51,19 @@
   * `docs:` 문서 수정 (README, CONVENTION 등)
   * `refactor:` 코드 리팩토링 (기능 변화 없음)
   * `chore:` 빌드 업무 수정, 패키지 매니저 설정 등 (코드 변화 없음)
+  * `test:` 테스트 코드 추가 및 수정
   * *예시: `feat: 메뉴 목록 조회 API 구현`*
 
 ---
 
 ## 4. API 설계 규칙 (API Design Rules)
+
 * **RESTful URI 규칙**:
   * 복수형 명사를 사용하며, 행위(동사)는 HTTP Method로 표현합니다.
   * 조회: `GET /menus`
   * 등록/충전/주문: `POST /orders`, `POST /points/charge`
+  * **동사형 URI 설계 예외 경계**: 충전(`POST /points/charge`), 취소(`POST /orders/{orderId}/cancel`) 등 특정 프로세스 처리에 국한해서만 명사 리소스 뒤에 행위(동사)를 표현하는 설계를 허용하며, 그 외의 일반적인 리소스 다루기는 무조건 REST 원칙에 따라 HTTP Method(GET, POST, PUT, DELETE, PATCH)로 통제합니다.
+
 * **공통 응답 JSON 포맷**: 모든 API는 클라이언트에게 일정한 구조로 응답을 내려주어야 합니다.
 
 ### 성공 응답 예시 (HTTP Status: 200 OK)
@@ -73,10 +86,23 @@
   "data": null,
   "error": {
     "code": "INSUFFICIENT_POINT",
-    "message": "포인트 잔액이 부족합니다."
+    "message": "포인트 잔액이 부족합니다.",
+    "details": [
+      {
+        "field": "amount",
+        "message": "충전 금액은 0보다 커야 합니다."
+      }
+    ]
   }
 }
 ```
+
+### 4.3. 예외 처리 에러 코드 규칙
+* **에러 코드 체계화**: 실패 응답의 `error.code`에 들어갈 상수값은 반드시 도메인별 접두사를 명문화하여 설계합니다.
+  * 회원 관련 에러 접두사: `MEMBER_` (예: `MEMBER_NOT_FOUND`)
+  * 포인트 관련 에러 접두사: `POINT_` (예: `POINT_INSUFFICIENT`)
+  * 주문 관련 에러 접두사: `ORDER_` (예: `ORDER_NOT_FOUND`)
+  * 시스템 관련 공통 에러 접두사: `SYSTEM_` (예: `SYSTEM_INTERNAL_ERROR`)
 
 ---
 
@@ -103,5 +129,44 @@
   * 예) `P4: 변수명 menuList를 menus로 축약해도 의미 전달에 무리가 없을 것 같습니다.`
 * **P5: 칭찬과 응원 (Praise)**
   * 깔끔한 코드 구성이나 좋은 설계 방향에 대한 긍정적인 피드백입니다.
-  * 예) `P5: 예외 처리와 유효성 검증 로직이 매우 깔끔하게 잘 분리되었습니다. 👍`
+  * 예) `P5: 예외 처리와 유효성 검증 로직이 매우 깔끔하게 잘 분리되었습니다.`
 
+---
+
+## 6. 아키텍처 규칙 (Architecture Rules)
+
+### 6.1. 컨텍스트 맵 (Context Map) 규칙
+* **의존성 방향 제약**:
+  * `order`(주문) 컨텍스트는 `member`(회원), `menu`(메뉴), `point`(포인트) 컨텍스트를 참조할 수 있습니다.
+  * 그 외의 다른 컨텍스트(예: `member`가 `order`를 참조하거나, `point`가 `order`를 참조하는 등)는 역방향으로 참조할 수 없습니다. 이는 순환 참조(Circular Dependency)를 원천 차단하기 위함입니다.
+* **도메인 간 결합도 최소화**:
+  * 컨텍스트 간 직접적인 클래스/엔티티 참조를 지양하며, 다른 컨텍스트의 데이터를 조회하거나 트랜잭션을 처리할 때는 가급적 인터페이스나 이벤트를 활용하여 결합을 낮춥니다.
+  * 특히, JPA 엔티티 구현 시 강한 의존성을 피하기 위해 다른 컨텍스트에 속한 엔티티 간의 객체 참조 매핑(예: `@ManyToOne Member`) 대신 식별자 직접 참조(`Long memberId` 등) 방식을 기본 원칙으로 적용합니다.
+  * **서비스 레이어 의존성 차단**: 다른 바운디드 컨텍스트의 핵심 구현 서비스(예: OrderService 내 MemberService 직접 주입)를 바로 주입받아 사용해서는 안 됩니다. 필요 시 퍼사드(Facade) 계층, 전용 조회 API, 혹은 이벤트를 경유하는 구조로 결합 경계를 통제합니다.
+
+### 6.2. 컨텍스트 라우팅 (Context Routing) 규칙
+* **URI 경로 분리**:
+  * API 경로 세그먼트의 첫 단어는 반드시 해당 요청이 진입할 바운디드 컨텍스트의 이름을 명시합니다.
+    * 예: `/menus/**` -> `menu` 컨텍스트로 라우팅
+    * 예: `/orders/**` -> `order` 컨텍스트로 라우팅
+    * 예: `/points/**` -> `point` 컨텍스트로 라우팅
+  * **버전 접두사 예외 필터링**: 공통 API 버전 접두사(예: `/api/v1/**` 등)가 경로 선두에 위치할 경우, 라우터는 이를 예외 필터링(무시)하고 그 뒤에 따라오는 실제 첫 번째 비즈니스 도메인 세그먼트를 기준으로 컨텍스트 라우팅을 수행해야 합니다.
+    * 예: `/api/v1/menus/**` -> `api/v1`을 필터링하고 `menus` 세그먼트를 식별하여 `menu` 컨텍스트로 분석
+* **컨트롤러 위임(Routing) 한계**:
+  * 컨트롤러는 HTTP 요청의 유효성 검증과 응답 포맷 변환 역할만 수행하며, 핵심 비즈니스 로직에 관여하지 않고 즉시 해당 컨텍스트의 서비스(Application Service)로 요청을 전달(Routing)해야 합니다.
+
+### 6.3. 트랜잭션 바운더리 (Transaction Boundary) 규칙
+* **트랜잭션 전파 제어**:
+  * 컨텍스트 간 트랜잭션 결합을 최소화하기 위해 Spring Application Event를 활용한 비동기 리스너 구성을 기본 설계 표준으로 적용합니다.
+  * 단, 비동기 호출로는 처리가 곤란하며 즉각적이고 물리적인 동기식 트랜잭션 격리가 요구되는 특수한 경우(예: 결제, 재고 등)에 한해서만 제한적으로 `@Transactional(propagation = Propagation.REQUIRES_NEW)` 전파 속성을 사용하여 분리하는 방식을 허용합니다.
+* **보상 트랜잭션 고려**:
+  * 트랜잭션 바운더리가 나뉨에 따라 실패 시의 데이터 일관성 처리를 위해, 필요한 경우 이벤트 기반 보상 트랜잭션을 설계에 반영해야 합니다.
+
+---
+
+## 7. 로깅 규칙 (Logging Rules)
+
+### 7.1. 비동기 호출 및 트랜잭션 추적 가이드
+* **공통 추적 식별자(Trace ID) 포함**:
+  * 컨텍스트 간의 비동기 호출(Spring Application Event 등)이나 다중 컨텍스트 트랜잭션 흐름을 역추적할 수 있도록, 로그 기록 시 흐름을 관통하는 공통 추적 식별자(Trace ID 등)를 포함하여 로깅하는 것을 원칙으로 삼습니다.
+  * MDC(Mapped Diagnostic Context) 등을 활용하여 멀티 스레드 및 비동기 전파 환경에서도 Trace ID가 끊기지 않고 전파되도록 관리해야 합니다.
