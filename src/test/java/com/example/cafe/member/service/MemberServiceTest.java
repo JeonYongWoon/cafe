@@ -3,6 +3,7 @@ package com.example.cafe.member.service;
 import com.example.cafe.global.error.CustomException;
 import com.example.cafe.global.error.ErrorCode;
 import com.example.cafe.member.domain.Member;
+import com.example.cafe.member.dto.MemberResponse;
 import com.example.cafe.member.dto.MemberSignupRequest;
 import com.example.cafe.member.dto.MemberSignupResponse;
 import com.example.cafe.member.repository.MemberRepository;
@@ -12,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -58,5 +60,33 @@ class MemberServiceTest {
         assertThatThrownBy(() -> memberService.signup(request))
                 .isInstanceOf(CustomException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.DUPLICATE_USERNAME);
+    }
+
+    @Test
+    void getMemberDetailSuccess() {
+        Member member = Member.builder()
+                .username("user123")
+                .password("encoded_password")
+                .pointBalance(10000L)
+                .build();
+        org.springframework.test.util.ReflectionTestUtils.setField(member, "id", 1L);
+
+        when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
+
+        MemberResponse response = memberService.getMemberDetail(1L);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getMemberId()).isEqualTo(1L);
+        assertThat(response.getUsername()).isEqualTo("user123");
+        assertThat(response.getPointBalance()).isEqualTo(10000L);
+    }
+
+    @Test
+    void getMemberDetailFailNotFound() {
+        when(memberRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> memberService.getMemberDetail(1L))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBER_NOT_FOUND);
     }
 }

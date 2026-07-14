@@ -3,6 +3,7 @@ package com.example.cafe.member.service;
 import com.example.cafe.global.error.CustomException;
 import com.example.cafe.global.error.ErrorCode;
 import com.example.cafe.member.domain.Member;
+import com.example.cafe.member.dto.MemberResponse;
 import com.example.cafe.member.dto.MemberSignupRequest;
 import com.example.cafe.member.dto.MemberSignupResponse;
 import com.example.cafe.member.repository.MemberRepository;
@@ -18,6 +19,12 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public MemberResponse getMemberDetail(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        return MemberResponse.from(member);
+    }
 
     @Transactional
     public MemberSignupResponse signup(MemberSignupRequest request) {
