@@ -16,6 +16,21 @@ public class GlobalExceptionHandler {
                 .status(errorCode.getHttpStatus())
                 .body(response);
     }
+
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<?>> handleMethodArgumentNotValidException(org.springframework.web.bind.MethodArgumentNotValidException e) {
+        org.springframework.validation.FieldError fieldError = e.getBindingResult().getFieldError();
+        String code = "INVALID_INPUT_VALUE";
+        String message = "입력값이 올바르지 않습니다.";
+        if (fieldError != null) {
+            message = fieldError.getDefaultMessage();
+            if ("amount".equals(fieldError.getField())) {
+                code = "INVALID_CHARGE_AMOUNT";
+            }
+        }
+        ApiResponse<?> response = ApiResponse.fail(code, message);
+        return ResponseEntity.badRequest().body(response);
+    }
     
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleException(Exception e) {

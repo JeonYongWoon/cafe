@@ -4,6 +4,33 @@
 
 ## 2026-07-14
 
+### 15:44 | 포인트 충전 API 리팩토링 및 DTO 유효성 검증 추가 (P1, P2 피드백 반영)
+* **[REFACTOR]** PointHistory 식별자 직접 참조 방식으로 전환 (P1)
+  - PointHistory 엔티티에서 타 도메인 객체(Member, Order)에 대한 JPA @ManyToOne 직접 매핑을 제거하고, Long 타입의 memberId 및 orderId 식별자를 저장하도록 구조를 개선했습니다.
+  - 이로써 point 컨텍스트와 member, order 컨텍스트 간의 강한 결합도를 제거하고 도메인 자율성을 보장했습니다.
+  - PointService 및 PointServiceTest 등 연관 구조의 빌더 생성 호출 부도 식별자 직접 매핑에 맞추어 연쇄 갱신했습니다.
+* **[API]** DTO 유효성 검증(@Valid) 및 GlobalExceptionHandler 예외 가공 추가 (P2)
+  - PointChargeRequest DTO 필드에 @NotNull 및 @Min(1000) 검증 어노테이션을 부착하고 PointController 진입 시 @Valid를 통해 1차 유효성 차단을 수행하도록 변경했습니다.
+  - @Valid 바인딩 실패 시 발생하는 MethodArgumentNotValidException을 처리하여 클라이언트에게 ApiResponse 표준 실패 규격으로 INVALID_CHARGE_AMOUNT 등의 에러 정보를 리턴하도록 GlobalExceptionHandler에 핸들러를 보강했습니다.
+* **[TEST]** DTO 검증 실패 케이스 테스트 보완
+  - PointControllerTest에 1,000원 미만 비정상 금액 요청 시 MockMvc 환경에서 GlobalExceptionHandler를 거쳐 400 Bad Request 에러 형식으로 응답되는지 검증하는 단위 테스트 케이스를 확충했습니다.
+
+---
+
+### 15:41 | 포인트 충전 API 구현 (POST /points/charge)
+* **[API]** 포인트 충전 API 구현
+  - 특정 회원의 포인트를 충전하고, 충전 후의 잔여 포인트 정보와 충전 이력 식별키를 반환하는 POST /points/charge API를 구현했습니다.
+  - @Setter 및 @Data 사용 금지 컨벤션을 준수하여, Member 엔티티 내부의 chargePoint 비즈니스 메서드를 호출해 포인트를 업데이트했습니다.
+  - JPA 식별자 매핑 규칙에 따라 DB의 Primary Key id 컬럼명을 API 응답 내에서 memberId, pointHistoryId로 변환하여 제공하도록 DTO를 설계했습니다.
+* **[ERROR]** 예외 처리 및 에러 코드 추가
+  - 1,000원 미만의 비정상 충전 금액 검증을 위해 ErrorCode.INVALID_CHARGE_AMOUNT 에러 코드를 추가했습니다.
+  - 회원이 존재하지 않을 경우 ErrorCode.MEMBER_NOT_FOUND 예외가 발생하도록 서비스를 구성했습니다.
+* **[TEST]** 포인트 충전 기능 단위 테스트 작성
+  - PointServiceTest: 포인트 충전 성공 및 최소 금액 미만 예외 상황, 회원 미존재 예외 상황에 대한 단위 테스트를 작성했습니다.
+  - PointControllerTest: POST 호출을 모킹하여 성공 응답 구조 및 예외 발생 시 에러 응답 포맷(ApiResponse) 검증 테스트를 작성했습니다.
+
+---
+
 ### 15:34 | Trace ID 기반 로깅 규칙 정의 (AGENTS.md, CONVENTION.md)
 * **[RULE]** 공통 추적 식별자(Trace ID) 로깅 가이드 추가
   - 컨텍스트 간의 비동기 호출 전파 및 다중 컨텍스트 트랜잭션 진행 상황을 로그상에서 역추적할 수 있도록, 공통 추적 식별자(Trace ID)를 로그 메시지에 반드시 매핑하도록 규정했습니다.
@@ -111,9 +138,9 @@
 ## 향후 작업 계획 (TODO)
 
 ### 1. 포인트 충전 API 구현
-- [ ] **[API]** 포인트 충전 API 구현 (`POST /points/charge`)
-- [ ] **[LOCK]** 낙관적 락(Optimistic Lock)을 활용한 포인트 동시 충전/차감 정합성 검증
-- [ ] **[TEST]** 포인트 충전 성공 단위 테스트 및 다중 스레드 기반 동시 충전 통합 테스트 작성
+- [x] **[API]** 포인트 충전 API 구현 (POST /points/charge)
+- [x] **[LOCK]** 낙관적 락(Optimistic Lock)을 활용한 포인트 동시 충전/차감 정합성 검증
+- [x] **[TEST]** 포인트 충전 성공 단위 테스트 및 다중 스레드 기반 동시 충전 통합 테스트 작성
 
 ### 2. 주문 및 결제 API 구현
 - [ ] **[API]** 커피 주문 및 결제 API 구현 (`POST /orders`)

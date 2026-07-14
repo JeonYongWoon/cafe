@@ -1,7 +1,5 @@
 package com.example.cafe.point.domain;
 
-import com.example.cafe.member.domain.Member;
-import com.example.cafe.order.domain.Order;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,13 +17,11 @@ public class PointHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    @Column(name = "member_id", nullable = false)
+    private Long memberId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
-    private Order order;
+    @Column(name = "order_id")
+    private Long orderId;
 
     @Column(name = "amount", nullable = false)
     private Long amount;
@@ -43,9 +39,9 @@ public class PointHistory {
     }
 
     @Builder
-    public PointHistory(Member member, Order order, Long amount, PointType type) {
-        this.member = member;
-        this.order = order;
+    public PointHistory(Long memberId, Long orderId, Long amount, PointType type) {
+        this.memberId = memberId;
+        this.orderId = orderId;
         this.amount = amount;
         this.type = type;
     }
