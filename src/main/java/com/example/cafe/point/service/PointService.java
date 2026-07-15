@@ -24,7 +24,7 @@ public class PointService {
     @Transactional
     public PointChargeResponse chargePoint(PointChargeRequest request) {
         if (request.getAmount() == null || request.getAmount() < 1000) {
-            throw new CustomException(ErrorCode.INVALID_CHARGE_AMOUNT);
+            throw new CustomException(ErrorCode.POINT_INVALID_CHARGE_AMOUNT);
         }
 
         Member member = memberRepository.findById(request.getMemberId())

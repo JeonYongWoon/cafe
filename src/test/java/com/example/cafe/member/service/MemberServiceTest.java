@@ -59,7 +59,7 @@ class MemberServiceTest {
 
         assertThatThrownBy(() -> memberService.signup(request))
                 .isInstanceOf(CustomException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.DUPLICATE_USERNAME);
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBER_DUPLICATE_USERNAME);
     }
 
     @Test

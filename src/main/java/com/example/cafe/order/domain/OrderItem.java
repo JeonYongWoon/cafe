@@ -34,15 +34,11 @@ public class OrderItem {
     private Long price;
 
     @Builder
-    public OrderItem(Long menuId, Temperature temperature, Integer quantity, Long price) {
+    public OrderItem(Order order, Long menuId, Temperature temperature, Integer quantity, Long price) {
+        this.order = order;
         this.menuId = menuId;
         this.temperature = temperature;
         this.quantity = quantity;
         this.price = price;
-    }
-
-    // package-private: Order.addOrderItem()이 유일한 진입점. 동일 패키지 외부(타 컨텍스트)에서는 호출 불가
-    void setOrder(Order order) {
-        this.order = order;
     }
 }

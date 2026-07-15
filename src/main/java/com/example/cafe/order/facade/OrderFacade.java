@@ -1,11 +1,8 @@
 package com.example.cafe.order.facade;
 
-import com.example.cafe.global.error.CustomException;
-import com.example.cafe.global.error.ErrorCode;
 import com.example.cafe.member.domain.Member;
 import com.example.cafe.member.service.MemberService;
 import com.example.cafe.menu.domain.Menu;
-import com.example.cafe.menu.domain.MenuStatus;
 import com.example.cafe.menu.service.MenuService;
 import com.example.cafe.order.domain.Order;
 import com.example.cafe.order.domain.OrderItem;
@@ -37,24 +34,14 @@ public class OrderFacade {
         Member member = memberService.getMember(request.getMemberId());
 
         long totalPrice = 0;
-        List<OrderItem> orderItems = new ArrayList<>();
+        List<OrderItemTempInfo> tempInfos = new ArrayList<>();
 
         for (OrderCreateRequest.OrderItemRequest itemRequest : request.getItems()) {
             Menu menu = menuService.getMenu(itemRequest.getMenuId());
+            menu.validateAvailable();
 
-            if (menu.getStatus() == MenuStatus.SOLD_OUT || menu.getStatus() == MenuStatus.DISCONTINUED) {
-                throw new CustomException(ErrorCode.MENU_NOT_AVAILABLE);
-            }
-
-            OrderItem orderItem = OrderItem.builder()
-                    .menuId(menu.getId())
-                    .temperature(itemRequest.getTemperature())
-                    .quantity(itemRequest.getQuantity())
-                    .price(menu.getPrice())
-                    .build();
-
-            orderItems.add(orderItem);
             totalPrice += menu.getPrice() * itemRequest.getQuantity();
+            tempInfos.add(new OrderItemTempInfo(menu, itemRequest));
         }
 
         member.usePoint(totalPrice);
@@ -65,7 +52,14 @@ public class OrderFacade {
                 .status(OrderStatus.RECEIVED)
                 .build();
 
-        for (OrderItem orderItem : orderItems) {
+        for (OrderItemTempInfo temp : tempInfos) {
+            OrderItem orderItem = OrderItem.builder()
+                    .order(order)
+                    .menuId(temp.menu.getId())
+                    .temperature(temp.itemRequest.getTemperature())
+                    .quantity(temp.itemRequest.getQuantity())
+                    .price(temp.menu.getPrice())
+                    .build();
             order.addOrderItem(orderItem);
         }
 
@@ -76,5 +70,15 @@ public class OrderFacade {
         eventPublisher.publishEvent(new OrderCompletedEvent(savedOrder.getId()));
 
         return OrderResponse.from(savedOrder);
+    }
+
+    private static class OrderItemTempInfo {
+        final Menu menu;
+        final OrderCreateRequest.OrderItemRequest itemRequest;
+
+        OrderItemTempInfo(Menu menu, OrderCreateRequest.OrderItemRequest itemRequest) {
+            this.menu = menu;
+            this.itemRequest = itemRequest;
+        }
     }
 }

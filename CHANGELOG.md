@@ -4,6 +4,28 @@
 
 ## 2026-07-15
 
+### 16:15 | 2차 코드 리뷰 피드백 반영 (캡슐화 보완 및 에러 핸들링 유연화)
+* **[REFACTOR]** OrderItem 연관관계 캡슐화 강화
+  - OrderItem 엔티티의 setOrder() 편의 메서드를 제거하고, 빌더 생성자에 부모 Order 객체를 필수로 주입받도록 생명주기를 강하게 결합했습니다. (P1-1)
+  - Order.addOrderItem()에서 양방향 연관관계를 직접 수립하는 책임을 빌더 시점으로 전가하여 영속 전 객체의 불완전 상태 가능성을 차단했습니다.
+* **[REFACTOR]** 에러 코드 접두사 규격화 (P2-1)
+  - DUPLICATE_USERNAME -> MEMBER_DUPLICATE_USERNAME
+  - INVALID_CREDENTIALS -> MEMBER_INVALID_CREDENTIALS
+  - INVALID_CHARGE_AMOUNT -> POINT_INVALID_CHARGE_AMOUNT
+  - INSUFFICIENT_POINT -> POINT_INSUFFICIENT
+  - 위 에러 코드 변경 사항을 모든 서비스, 엔티티, 컨트롤러 및 테스트 소스 코드에 전수 갱신했습니다.
+* **[REFACTOR]** GlobalExceptionHandler 유효성 검증 예외 동적 매핑 (P2-2)
+  - 특정 필드(amount)의 하드코딩 분기 제거를 위해, 검증 어노테이션 메시지에 [에러코드]:[메시지] 포맷을 인코딩하고 이를 파싱해내는 동적 맵핑 구조를 구현했습니다.
+  - SYSTEM_INVALID_INPUT_VALUE 공통 에러 코드를 추가 정의하여 디폴트 예외 상황에 대비했습니다.
+* **[ARCH]** 비동기 스레드간 MDC(Trace ID) 복사 구현 (P3-1)
+  - ThreadPoolTaskExecutor의 TaskDecorator로 작동할 MdcTaskDecorator를 신규 개발 및 등록하여, 비동기 스레드 실행 시에도 원래 요청 스레드의 MDC(Trace ID) 정보가 유실되지 않도록 연계 전파 구조를 완성했습니다.
+* **[DESIGN]** 메뉴 검증 책임의 Menu 도메인 위임 (P3-2)
+  - OrderFacade의 상태 if 검사 로직을 Menu.validateAvailable() 도메인 메서드로 위임하여 캡슐화 수준을 향상시켰습니다.
+* **[REFACTOR]** MenuService import 경로 정리 (P4-1)
+  - Menu 및 CustomException 등의 풀 클래스 패키지 선언을 제거하고 최상단 import 영역으로 모아 가독성을 개선했습니다.
+
+---
+
 ### 16:01 | 와이어프레임 및 필수 요구사항 문서화 (WIREFRAME.md)
 * **[DOCS]** 와이어프레임 이미지 저장 및 마크다운 문서 작성
   - 사용자가 제공한 와이어프레임 이미지를 프로젝트 내부 리소스 폴더인 `docs/images/wireframe.png` 경로에 저장하였습니다.

@@ -102,12 +102,14 @@ class OrderFacadeTest {
         ReflectionTestUtils.setField(mockSavedOrder, "id", 10023L);
 
         com.example.cafe.order.domain.OrderItem orderItem1 = com.example.cafe.order.domain.OrderItem.builder()
+                .order(mockSavedOrder)
                 .menuId(1L)
                 .temperature(Temperature.ICE)
                 .quantity(2)
                 .price(4500L)
                 .build();
         com.example.cafe.order.domain.OrderItem orderItem2 = com.example.cafe.order.domain.OrderItem.builder()
+                .order(mockSavedOrder)
                 .menuId(2L)
                 .temperature(Temperature.HOT)
                 .quantity(1)
@@ -163,7 +165,7 @@ class OrderFacadeTest {
 
         assertThatThrownBy(() -> orderFacade.createOrder(request))
                 .isInstanceOf(CustomException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INSUFFICIENT_POINT);
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POINT_INSUFFICIENT);
 
         verify(orderService, never()).saveOrder(any());
         verify(pointService, never()).recordPointUse(any(), any(), any());

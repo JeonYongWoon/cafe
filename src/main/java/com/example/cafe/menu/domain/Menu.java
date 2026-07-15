@@ -45,4 +45,10 @@ public class Menu {
         this.status = status != null ? status : MenuStatus.AVAILABLE;
         this.imageUrl = imageUrl;
     }
+
+    public void validateAvailable() {
+        if (this.status == MenuStatus.SOLD_OUT || this.status == MenuStatus.DISCONTINUED) {
+            throw new com.example.cafe.global.error.CustomException(com.example.cafe.global.error.ErrorCode.MENU_NOT_AVAILABLE);
+        }
+    }
 }

@@ -15,10 +15,10 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderCreateRequest {
 
-    @NotNull(message = "회원 ID는 필수입니다.")
+    @NotNull(message = "SYSTEM_INVALID_INPUT_VALUE:회원 ID는 필수입니다.")
     private Long memberId;
 
-    @NotEmpty(message = "주문 상품은 최소 1개 이상이어야 합니다.")
+    @NotEmpty(message = "SYSTEM_INVALID_INPUT_VALUE:주문 상품은 최소 1개 이상이어야 합니다.")
     @Valid
     private List<OrderItemRequest> items;
 
@@ -32,14 +32,14 @@ public class OrderCreateRequest {
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     public static class OrderItemRequest {
         
-        @NotNull(message = "메뉴 ID는 필수입니다.")
+        @NotNull(message = "SYSTEM_INVALID_INPUT_VALUE:메뉴 ID는 필수입니다.")
         private Long menuId;
 
-        @NotNull(message = "온도는 필수입니다.")
+        @NotNull(message = "SYSTEM_INVALID_INPUT_VALUE:온도는 필수입니다.")
         private Temperature temperature;
 
-        @NotNull(message = "수량은 필수입니다.")
-        @Min(value = 1, message = "수량은 최소 1개 이상이어야 합니다.")
+        @NotNull(message = "SYSTEM_INVALID_INPUT_VALUE:수량은 필수입니다.")
+        @Min(value = 1, message = "SYSTEM_INVALID_INPUT_VALUE:수량은 최소 1개 이상이어야 합니다.")
         private Integer quantity;
 
         @Builder

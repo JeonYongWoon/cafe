@@ -82,7 +82,7 @@ class PointControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.data").isEmpty())
-                .andExpect(jsonPath("$.error.code").value("INVALID_CHARGE_AMOUNT"))
+                .andExpect(jsonPath("$.error.code").value("POINT_INVALID_CHARGE_AMOUNT"))
                 .andExpect(jsonPath("$.error.message").value("충전 금액은 최소 1,000원 이상이어야 합니다."));
     }
 

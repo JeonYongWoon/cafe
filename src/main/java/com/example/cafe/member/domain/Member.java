@@ -54,7 +54,7 @@ public class Member {
 
     public void usePoint(Long amount) {
         if (this.pointBalance < amount) {
-            throw new com.example.cafe.global.error.CustomException(com.example.cafe.global.error.ErrorCode.INSUFFICIENT_POINT);
+            throw new com.example.cafe.global.error.CustomException(com.example.cafe.global.error.ErrorCode.POINT_INSUFFICIENT);
         }
         this.pointBalance -= amount;
     }

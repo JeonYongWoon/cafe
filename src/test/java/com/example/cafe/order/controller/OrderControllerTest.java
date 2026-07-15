@@ -182,7 +182,7 @@ class OrderControllerTest {
                 .build();
 
         when(orderFacade.createOrder(any(OrderCreateRequest.class)))
-                .thenThrow(new CustomException(ErrorCode.INSUFFICIENT_POINT));
+                .thenThrow(new CustomException(ErrorCode.POINT_INSUFFICIENT));
 
         mockMvc.perform(post("/orders")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -190,7 +190,7 @@ class OrderControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.data").isEmpty())
-                .andExpect(jsonPath("$.error.code").value("INSUFFICIENT_POINT"))
+                .andExpect(jsonPath("$.error.code").value("POINT_INSUFFICIENT"))
                 .andExpect(jsonPath("$.error.message").value("보유 포인트 잔액이 부족하여 결제에 실패했습니다."));
     }
 }

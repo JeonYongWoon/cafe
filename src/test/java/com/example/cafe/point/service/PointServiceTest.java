@@ -74,7 +74,7 @@ class PointServiceTest {
 
         assertThatThrownBy(() -> pointService.chargePoint(request))
                 .isInstanceOf(CustomException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_CHARGE_AMOUNT);
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POINT_INVALID_CHARGE_AMOUNT);
     }
 
     @Test

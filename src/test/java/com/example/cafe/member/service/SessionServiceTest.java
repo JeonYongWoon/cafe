@@ -54,7 +54,7 @@ class SessionServiceTest {
 
         assertThatThrownBy(() -> sessionService.login(request))
                 .isInstanceOf(CustomException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_CREDENTIALS);
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBER_INVALID_CREDENTIALS);
     }
 
     @Test
@@ -70,6 +70,6 @@ class SessionServiceTest {
 
         assertThatThrownBy(() -> sessionService.login(request))
                 .isInstanceOf(CustomException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_CREDENTIALS);
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBER_INVALID_CREDENTIALS);
     }
 }

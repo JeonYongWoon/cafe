@@ -29,7 +29,7 @@ public class MemberService {
     @Transactional
     public MemberSignupResponse signup(MemberSignupRequest request) {
         if (memberRepository.existsByUsername(request.getUsername())) {
-            throw new CustomException(ErrorCode.DUPLICATE_USERNAME);
+            throw new CustomException(ErrorCode.MEMBER_DUPLICATE_USERNAME);
         }
 
         Member member = Member.builder()

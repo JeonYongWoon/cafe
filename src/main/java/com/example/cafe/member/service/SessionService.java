@@ -21,10 +21,10 @@ public class SessionService {
 
     public SessionCreateResponse login(SessionCreateRequest request) {
         Member member = memberRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_CREDENTIALS));
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_INVALID_CREDENTIALS));
 
         if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
-            throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
+            throw new CustomException(ErrorCode.MEMBER_INVALID_CREDENTIALS);
         }
 
         return SessionCreateResponse.from(member);
