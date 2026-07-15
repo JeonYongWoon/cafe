@@ -5,12 +5,19 @@
 ---
 
 ## 관련 문서 바로가기
-- [요구사항 정의서 (REQUIREMENTS.md)](./REQUIREMENTS.md)
-- [데이터베이스 ERD 설계서 (ERD.md)](./ERD.md)
-- [REST API 상세 명세서 (API.md)](./API.md)
-- [프로젝트 공통 컨벤션 (CONVENTION.md)](./CONVENTION.md)
-- [와이어프레임 및 화면 설계서 (WIREFRAME.md)](./WIREFRAME.md)
+- [요구사항 정의서 (REQUIREMENTS.md)](./docs/REQUIREMENTS.md)
+- [데이터베이스 ERD 설계서 (ERD.md)](./docs/ERD.md)
+- [REST API 상세 명세서 (API.md)](./docs/API.md)
+- [프로젝트 공통 컨벤션 (CONVENTION.md)](./docs/CONVENTION.md)
+- [와이어프레임 및 화면 설계서 (WIREFRAME.md)](./docs/WIREFRAME.md)
 - [프로젝트 변경 이력 (CHANGELOG.md)](./CHANGELOG.md)
+- [문서 조회 라우터 (document_router.md)](./docs/document_router.md)
+- [메인 오케스트라 규칙 (orchestrator_rules.md)](./docs/orchestrator_rules.md)
+- [서브에이전트 규칙 (subagent_rules.md)](./docs/subagent_rules.md)
+- [아키텍처 결정 기록 (adr.md)](./docs/adr.md)
+- [AI 실수 사전 (ai_common_mistakes.md)](./docs/ai_common_mistakes.md)
+- [리뷰 및 검증 로그 템플릿 (review_log_template.md)](./docs/review_log_template.md)
+- [안전 정지 리포트 템플릿 (safety_stop_template.md)](./docs/safety_stop_template.md)
 
 ---
 

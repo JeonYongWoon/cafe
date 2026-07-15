@@ -4,6 +4,25 @@
 
 ## 2026-07-15
 
+### 17:00 | 프로젝트 문서 구조 개편 및 에이전트 오케스트레이션 규칙 정립
+* **[DOCS]** 프로젝트 루트 마크다운 파일들의 docs/ 디렉토리 통합 이동
+  - API.md, CONVENTION.md, ERD.md, REQUIREMENTS.md, WIREFRAME.md 파일들을 docs/ 디렉토리 하위로 이동하여 루트 구조를 정리했습니다.
+* **[DOCS]** 에이전트 설정 파일 AGENTS.md 경량화
+  - .agents/AGENTS.md 내에 공통 행동 규칙(변경 전 승인 필수, 이모지 금지, 한국어 사용, 개발 로그 작성 등)만 남겨두고 불필요한 컨벤션 세부 본문을 제거하여 가독성을 높였습니다.
+* **[DOCS]** 에이전트 오케스트레이션 및 위험도 제어 규칙 문서 신설
+  - docs/document_router.md: 토큰 절약을 위한 역할별 전용 조회 문서 맵 정의.
+  - docs/orchestrator_rules.md: 메인 오케스트라의 태스크 위험도 분류(고/중/저) 및 2회 거절 시 안전 정지(Safety Stop) 로직 기술.
+  - docs/subagent_rules.md: 구현, 검증, QA, 리뷰 에이전트의 역할 규정 및 테스팅 수준(통합, 슬라이스, 단위 테스트) 차등화 지침.
+  - docs/adr.md: JPA 엔티티 롬복 애너테이션 제한, Bounded Context 간 의존성 제거, 트랜잭션 전파 및 위험 등급별 다층적 검증 전략 도입에 관한 아키텍처 의사결정 기록(ADR) 문서 작성.
+* **[DOCS]** 에이전트 산출물 일관성을 위한 템플릿 신설
+  - docs/safety_stop_template.md & docs/review_log_template.md: 에이전트 중단 리포트 및 상세 리뷰 로그용 마크다운 템플릿 기획.
+  - .github/pull_request_template.md: PR(피얼) 제출 표준 템플릿 생성.
+  - .github/ISSUE_TEMPLATE/feature_request.md & bug_report.md: 깃허브 신규 기능 추가 및 버그 리포트 이슈 템플릿 생성.
+* **[DOCS]** README.md 관련 문서 바로가기 링크 갱신
+  - 루트에서 docs/ 디렉토리로 이동한 마크다운 파일들의 참조 경로를 수정하고, 신규 설계된 7개의 규칙 및 템플릿 마크다운 문서 링크들을 새로 등재하였습니다.
+
+---
+
 ### 16:15 | 2차 코드 리뷰 피드백 반영 (캡슐화 보완 및 에러 핸들링 유연화)
 * **[REFACTOR]** OrderItem 연관관계 캡슐화 강화
   - OrderItem 엔티티의 setOrder() 편의 메서드를 제거하고, 빌더 생성자에 부모 Order 객체를 필수로 주입받도록 생명주기를 강하게 결합했습니다. (P1-1)
