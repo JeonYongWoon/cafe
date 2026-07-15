@@ -9,6 +9,7 @@
 - [데이터베이스 ERD 설계서 (ERD.md)](./ERD.md)
 - [REST API 상세 명세서 (API.md)](./API.md)
 - [프로젝트 공통 컨벤션 (CONVENTION.md)](./CONVENTION.md)
+- [와이어프레임 및 화면 설계서 (WIREFRAME.md)](./WIREFRAME.md)
 - [프로젝트 변경 이력 (CHANGELOG.md)](./CHANGELOG.md)
 
 ---

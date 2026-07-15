@@ -42,4 +42,15 @@ public class PointService {
 
         return PointChargeResponse.of(member, savedHistory);
     }
+
+    @Transactional
+    public void recordPointUse(Long memberId, Long orderId, Long amount) {
+        PointHistory pointHistory = PointHistory.builder()
+                .memberId(memberId)
+                .orderId(orderId)
+                .amount(amount)
+                .type(PointType.USE)
+                .build();
+        pointHistoryRepository.save(pointHistory);
+    }
 }

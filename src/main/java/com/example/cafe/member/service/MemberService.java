@@ -41,4 +41,9 @@ public class MemberService {
         Member savedMember = memberRepository.save(member);
         return MemberSignupResponse.from(savedMember);
     }
+
+    public Member getMember(Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+    }
 }

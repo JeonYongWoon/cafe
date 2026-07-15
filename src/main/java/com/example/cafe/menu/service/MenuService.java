@@ -24,4 +24,9 @@ public class MenuService {
                 .map(MenuResponse::from)
                 .collect(Collectors.toList());
     }
+
+    public com.example.cafe.menu.domain.Menu getMenu(Long menuId) {
+        return menuRepository.findById(menuId)
+                .orElseThrow(() -> new com.example.cafe.global.error.CustomException(com.example.cafe.global.error.ErrorCode.MENU_NOT_AVAILABLE));
+    }
 }

@@ -2,7 +2,64 @@
 
 ---
 
+## 2026-07-15
+
+### 16:01 | 와이어프레임 및 필수 요구사항 문서화 (WIREFRAME.md)
+* **[DOCS]** 와이어프레임 이미지 저장 및 마크다운 문서 작성
+  - 사용자가 제공한 와이어프레임 이미지를 프로젝트 내부 리소스 폴더인 `docs/images/wireframe.png` 경로에 저장하였습니다.
+  - 프로젝트 루트에 `WIREFRAME.md` 문서를 새로 추가하여 와이어프레임 이미지와 요구사항 사양을 함께 기재하였습니다.
+  - 마크다운 문서 내에 각 화면(메인페이지, 로그인, 메뉴 상세, 장바구니, 포인트 충전, 결제 완료, 관리자 페이지)의 세부 구성 항목들을 텍스트로 표기하여 가독성을 높였습니다.
+  - `README.md` 파일의 관련 문서 바로가기 섹션에 `WIREFRAME.md`로 이동할 수 있는 바로가기 링크를 추가하여 문서 접근성을 개선하였습니다.
+
+---
+
 ## 2026-07-14
+
+### 16:09 | 코드 리뷰 P1/P2 피드백 반영 (POST /orders 아키텍처 정렬)
+* **[P1-1][REFACTOR]** Order 엔티티 Member 직접 참조 제거
+  - Order 엔티티에서 `@ManyToOne Member member` JPA 매핑을 제거하고, `@Column Long memberId` 식별자 직접 참조 방식으로 전환했습니다. (컨벤션 6.1)
+  - DB 컬럼명(`member_id`)은 변경 없이 유지됩니다.
+  - 연쇄 영향: OrderFacade 빌더 호출부 `.member(member)` → `.memberId(member.getId())`로 수정, OrderFacadeTest 수정.
+* **[P1-2][REFACTOR]** OrderItem 엔티티 Menu 직접 참조 제거
+  - OrderItem 엔티티에서 `@ManyToOne Menu menu` JPA 매핑을 제거하고, `@Column Long menuId` 식별자 직접 참조 방식으로 전환했습니다. (컨벤션 6.1)
+  - Order 참조는 동일 컨텍스트(order.domain) 내부 관계이므로 유지합니다.
+  - 연쇄 영향: OrderFacade 빌더 호출부 `.menu(menu)` → `.menuId(menu.getId())`, OrderResponse.from() 내 `getMenu().getId()` → `getMenuId()` 수정, OrderFacadeTest 수정.
+* **[P1-3][REFACTOR]** OrderItem.setOrder() 캡슐화 의도 명시
+  - `setOrder()` 메서드의 package-private 접근 수준이 동일 패키지 외부에서는 이미 접근 불가임을 확인하고, 코드 주석으로 `Order.addOrderItem()`이 유일한 진입점임을 명시했습니다.
+* **[P1-4][DESIGN]** 트랜잭션 바운더리 현행 유지 결정
+  - 포인트 차감과 주문 저장의 원자성 보장을 위해 단일 `@Transactional` 구조를 유지합니다. 컨벤션 6.3의 결제/재고 예외 경계에 해당함을 확인했습니다.
+* **[P2-1][DOCS]** AGENTS.md 에러 코드 접두사 `MENU_` 공식 추가
+  - 컨벤션 4.3 에러 코드 접두사 목록에 `MENU_` 항목을 추가했습니다.
+* **[P2-2][DOCS]** AGENTS.md 퍼사드 예외 경계 규칙 공식 추가
+  - 컨벤션 6.1 서비스 레이어 의존성 차단 항목에 퍼사드 계층이 타 도메인 서비스 직접 주입의 유일한 허용 예외 경계임을 명문화했습니다.
+
+---
+
+### 15:54 | 커피 주문 및 결제 API 구현 (POST /orders)
+* **[API]** 주문 접수 및 포인트 결제 API 구현
+  - 회원이 장바구니에 담긴 커피 상품들을 보유 포인트로 결제하고 주문을 접수하는 POST /orders API를 구현했습니다.
+  - 퍼사드(OrderFacade) 계층을 신규 도입하여 OrderService 내부에 타 도메인 서비스(MemberService, MenuService, PointService)를 직접 주입하는 아키텍처 오염을 차단했습니다.
+  - 응답 DTO(OrderResponse)에서 DB의 id PK 필드명을 식별자 매핑 규칙에 따라 orderId, menuId로 변환하여 반환합니다.
+* **[ARCH]** 퍼사드(Facade) 패턴 및 비동기 이벤트 구조 도입
+  - OrderFacade에서 회원 검증, 메뉴 유효성 및 판매 가능 여부 검증, 포인트 차감, 이력 저장, 주문 영속화, 이벤트 발행의 단계별 오케스트레이션을 수행합니다.
+  - 결제 완료 후 외부 플랫폼 전송 시뮬레이션은 OrderCompletedEvent를 발행하고 @Async @EventListener 기반의 OrderEventListener가 비동기로 처리합니다.
+  - @EnableAsync 어노테이션이 적용된 AsyncConfig 설정 클래스를 추가했습니다.
+* **[DOMAIN]** Member 엔티티 usePoint 예외 처리 일원화
+  - Member.usePoint() 메서드의 잔액 부족 예외를 기존 IllegalStateException에서 CustomException(ErrorCode.INSUFFICIENT_POINT)으로 변경하여 글로벌 예외 핸들러를 통한 일관된 API 실패 응답 처리 체계를 갖추었습니다.
+* **[ERROR]** 에러 코드 2종 추가
+  - MENU_NOT_AVAILABLE: 존재하지 않거나 SOLD_OUT / DISCONTINUED 상태의 메뉴 주문 시 발생 (400 Bad Request)
+  - INSUFFICIENT_POINT: 보유 포인트 잔액이 주문 총액보다 부족할 시 발생 (400 Bad Request)
+* **[SERVICE]** 각 도메인 서비스 조회/이력 메서드 확장
+  - MemberService.getMember(Long memberId): 회원 엔티티 직접 조회 메서드 추가
+  - MenuService.getMenu(Long menuId): 메뉴 엔티티 직접 조회 메서드 추가
+  - PointService.recordPointUse(Long memberId, Long orderId, Long amount): 포인트 USE 이력 저장 메서드 추가
+* **[TEST]** 주문 기능 테스트 작성
+  - OrderFacadeTest: 주문 결제 성공, 포인트 부족 실패, 품절 메뉴 실패 케이스 단위 테스트 작성
+  - OrderControllerTest: POST /orders 성공 응답 구조, MEMBER_NOT_FOUND / MENU_NOT_AVAILABLE / INSUFFICIENT_POINT 에러 케이스 MockMvc 테스트 작성
+* **[BUILD]** 테스트 의존성 추가
+  - LocalDateTime 직렬화 지원을 위해 jackson-datatype-jsr310을 testImplementation 스코프에 명시적으로 추가했습니다.
+
+---
 
 ### 15:44 | 포인트 충전 API 리팩토링 및 DTO 유효성 검증 추가 (P1, P2 피드백 반영)
 * **[REFACTOR]** PointHistory 식별자 직접 참조 방식으로 전환 (P1)
