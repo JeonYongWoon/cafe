@@ -4,6 +4,18 @@
 
 ## 2026-07-16
 
+### 15:37 | 인기 메뉴 조회 API 구현
+* **[FEAT]** Bounded Context 단방향 의존성 제약 준수 및 설계
+  - menu 패키지가 order 패키지를 참조하지 못하는 의존성 제약을 지키기 위해 PopularMenuProvider 인터페이스를 활용한 의존성 역전(DIP)을 구현했습니다.
+* **[FEAT]** JPQL 기반 인기 메뉴 집계 쿼리 및 리포지토리 구현
+  - OrderItemRepository를 신설하고 지정 범위 일수 내 주문 항목을 집계(SUM)하여 인기 메뉴 순으로 정렬하는 통계 JPQL 쿼리를 구현했습니다.
+* **[API]** GET /menus/popular 인기 메뉴 목록 조회 API 구현
+  - 최근 days(기본값 7) 일 동안의 누적 주문 수가 많은 상위 3가지 인기 메뉴를 조회하고 DTO 형식(menuId, name, price, orderCount)으로 매핑하여 반환하도록 구현했습니다.
+* **[REFACTOR]** days 파라미터 양수 검증 가드 보완
+  - MenuController에 @Validated 및 @Positive(message = "조회 기간은 양수여야 합니다.") 애너테이션을 적용하여 0 이하 정수 또는 음수 기간 인입을 차단했습니다.
+* **[TEST]** Repository, Service, Controller 전 계층 슬라이스 및 단위 검증 완료
+  - OrderItemRepositoryTest, MenuServiceTest, MenuControllerTest를 추가 및 갱신하여 전체 테스트를 정상 통과시켰습니다.
+
 ### 12:40 | 주문 상세 조회 API 구현 (피드백 반영 개정)
 * **[FEAT]** Bounded Context 격리를 반영한 주문 상세 조회 구현 (GET /orders/{orderId})
   - OrderService가 타 도메인 Repository(MenuRepository)를 직접 의존하지 않도록 분리하고, OrderFacade가 OrderService(인가 검증 완료된 주문 획득)와 MenuService(메뉴 일괄 조회)를 조율하여 최종 DTO를 빌드 및 반환하도록 책임을 격리했습니다.
@@ -271,9 +283,9 @@
 - [ ] **[TEST]** 영수증 단건 반환 및 개별 매핑 정합성 테스트 작성
 
 ### 4. 인기 메뉴 조회 API 구현
-- [ ] **[API]** 인기 메뉴 목록 조회 API 구현 (`GET /menus/popular`)
-- [ ] **[QUERY]** 최근 7일 동안의 주문 데이터를 group by 통계로 산출하는 DB 쿼리 구현
-- [ ] **[TEST]** 일주일 주문 통계가 정상적으로 필터링되어 출력되는지 검증 테스트 작성
+- [x] **[API]** 인기 메뉴 목록 조회 API 구현 (`GET /menus/popular`)
+- [x] **[QUERY]** 최근 7일 동안의 주문 데이터를 group by 통계로 산출하는 DB 쿼리 구현
+- [x] **[TEST]** 일주일 주문 통계가 정상적으로 필터링되어 출력되는지 검증 테스트 작성
 
 ### 5. [관리자] 전체 주문 조회 API 구현
 - [ ] **[API]** 전체 주문 목록 조회 API 구현 (`GET /admin/orders`)
