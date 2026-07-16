@@ -8,6 +8,7 @@ public enum ErrorCode {
     MEMBER_DUPLICATE_USERNAME(HttpStatus.BAD_REQUEST, "MEMBER_DUPLICATE_USERNAME", "이미 사용 중인 아이디입니다."),
     MEMBER_INVALID_CREDENTIALS(HttpStatus.BAD_REQUEST, "MEMBER_INVALID_CREDENTIALS", "아이디 또는 비밀번호가 일치하지 않습니다."),
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEMBER_NOT_FOUND", "해당 회원을 찾을 수 없습니다."),
+    MEMBER_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "MEMBER_UNAUTHORIZED", "로그인이 필요한 서비스입니다."),
     POINT_INVALID_CHARGE_AMOUNT(HttpStatus.BAD_REQUEST, "POINT_INVALID_CHARGE_AMOUNT", "충전 금액은 최소 1,000원 이상이어야 합니다."),
     MENU_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "MENU_NOT_AVAILABLE", "존재하지 않는 메뉴이거나 판매 불가능한 상태입니다."),
     POINT_INSUFFICIENT(HttpStatus.BAD_REQUEST, "POINT_INSUFFICIENT", "보유 포인트 잔액이 부족하여 결제에 실패했습니다."),

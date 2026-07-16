@@ -1,5 +1,6 @@
 package com.example.cafe.member.controller;
 
+import com.example.cafe.member.domain.MemberRole;
 import com.example.cafe.member.dto.SessionCreateRequest;
 import com.example.cafe.member.dto.SessionCreateResponse;
 import com.example.cafe.member.service.SessionService;
@@ -44,6 +45,7 @@ class SessionControllerTest {
         SessionCreateResponse response = SessionCreateResponse.builder()
                 .memberId(1L)
                 .username("user123")
+                .role(MemberRole.USER)
                 .build();
 
         when(sessionService.login(any(SessionCreateRequest.class))).thenReturn(response);
@@ -55,6 +57,7 @@ class SessionControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.username").value("user123"))
                 .andExpect(jsonPath("$.data.memberId").value(1))
+                .andExpect(jsonPath("$.data.role").value("USER"))
                 .andExpect(jsonPath("$.error").isEmpty());
     }
 }

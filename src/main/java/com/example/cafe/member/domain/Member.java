@@ -26,6 +26,10 @@ public class Member {
     @Column(name = "point_balance", nullable = false)
     private Long pointBalance;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private MemberRole role;
+
     @Version
     @Column(name = "version")
     private Long version;
@@ -39,10 +43,11 @@ public class Member {
     }
 
     @Builder
-    public Member(String username, String password, Long pointBalance) {
+    public Member(String username, String password, Long pointBalance, MemberRole role) {
         this.username = username;
         this.password = password;
         this.pointBalance = pointBalance != null ? pointBalance : 0L;
+        this.role = role != null ? role : MemberRole.USER;
     }
 
     public void chargePoint(Long amount) {

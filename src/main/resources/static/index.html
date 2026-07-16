@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>커피숍 주문 시스템</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1 class="brand-logo">JEONS CAFE</h1>
+        <nav>
+            <button onclick="showPage('main')">메인</button>
+            <button onclick="showPage('cart')">장바구니 (<span id="cart-count">0</span>)</button>
+            <button onclick="showPage('point')">포인트 충전</button>
+            <button onclick="showPage('admin')">관리자</button>
+            <span id="user-info" style="margin-left: auto;"></span>
+            <button id="login-nav-btn" onclick="showPage('login')">로그인</button>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section id="page-main" class="page active">
+            <div class="hero-banner">
+                <div class="hero-overlay">
+                    <h2>신선한 원두와 부드러운 우유의 만남</h2>
+                    <p>jeonscafe에서 엄선된 로스팅 커피를 만나보세요</p>
+                </div>
+            </div>
+            <h2>실시간 인기 메뉴 (최근 7일)</h2>
+            <div id="popular-menu-list" class="menu-grid"></div>
+            <h2>전체 메뉴 목록</h2>
+            <div id="menu-list" class="menu-grid"></div>
+        </section>
+
+        <section id="page-login" class="page">
+            <h2>로그인</h2>
+            <div class="form-group">
+                <label for="username">사용자명 (ID)</label>
+                <input type="text" id="username" placeholder="사용자명을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" placeholder="비밀번호를 입력하세요">
+            </div>
+            <button onclick="handleLogin()">로그인</button>
+            <button onclick="handleSignup()" class="btn-secondary">회원가입</button>
+        </section>
+
+        <div id="menu-detail-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">X</span>
+                <h2 id="modal-menu-name">메뉴 상세</h2>
+                <p id="modal-menu-price">가격: 0원</p>
+                <div class="form-group">
+                    <label>온도 선택</label>
+                    <select id="modal-menu-temp">
+                        <option value="ICE">ICE</option>
+                        <option value="HOT">HOT</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="modal-menu-qty">수량</label>
+                    <input type="number" id="modal-menu-qty" value="1" min="1">
+                </div>
+                <button onclick="addToCart()">장바구니 담기</button>
+            </div>
+        </div>
+
+        <section id="page-cart" class="page">
+            <h2>장바구니</h2>
+            <div id="cart-items"></div>
+            <div class="cart-summary">
+                <p>총 결제 금액: <span id="cart-total-price">0</span>원</p>
+                <button onclick="processOrder()" class="btn-primary">결제 및 주문하기</button>
+            </div>
+        </section>
+
+        <section id="page-point" class="page">
+            <h2>포인트 충전</h2>
+            <div class="point-status">
+                <p>현재 잔여 포인트: <strong id="current-point">0</strong> P</p>
+            </div>
+            <div class="point-buttons">
+                <button onclick="chargePoint(5000)">5,000 P 충전</button>
+                <button onclick="chargePoint(10000)">10,000 P 충전</button>
+                <button onclick="chargePoint(20000)">20,000 P 충전</button>
+                <button onclick="chargePoint(50000)">50,000 P 충전</button>
+            </div>
+        </section>
+
+        <section id="page-complete" class="page">
+            <h2>주문 및 결제가 완료되었습니다</h2>
+            <div class="order-result">
+                <p>최종 주문번호: <strong id="complete-order-id"></strong></p>
+                <p>총 결제금액: <strong id="complete-total-price"></strong>원</p>
+            </div>
+            <button onclick="showPage('main')">메인 페이지로 이동</button>
+        </section>
+
+        <section id="page-admin" class="page">
+            <h2>관리자 주문 관리 콘솔</h2>
+            <div class="admin-actions">
+                <button onclick="loadAdminOrders()">주문 목록 갱신</button>
+            </div>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>주문번호</th>
+                        <th>고객명</th>
+                        <th>총 금액</th>
+                        <th>현재 상태</th>
+                        <th>주문 시간</th>
+                        <th>상태 변경</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-order-list"></tbody>
+            </table>
+        </section>
+    </main>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <div id="confirm-modal" class="custom-confirm-modal">
+        <div class="confirm-modal-content">
+            <p id="confirm-message">진행하시겠습니까?</p>
+            <div class="confirm-buttons">
+                <button id="confirm-yes-btn" class="btn-primary">이동</button>
+                <button id="confirm-no-btn" class="btn-secondary" onclick="closeConfirmModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
