@@ -35,11 +35,19 @@ public class ConcurrencyIntegrationTest {
     @Autowired
     private MenuRepository menuRepository;
 
+    @Autowired
+    private com.example.cafe.order.repository.OrderRepository orderRepository;
+
+    @Autowired
+    private com.example.cafe.point.repository.PointHistoryRepository pointHistoryRepository;
+
     private Long testMemberId;
     private Long testMenuId;
 
     @BeforeEach
     void setUp() {
+        pointHistoryRepository.deleteAll();
+        orderRepository.deleteAll();
         memberRepository.deleteAll();
         menuRepository.deleteAll();
 

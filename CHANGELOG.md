@@ -4,6 +4,13 @@
 
 ## 2026-07-16
 
+### 16:41 | 통합 테스트 데이터 격리 및 재시도 AOP 로깅 보강 (피드백 반영)
+* **[BUG]** ConcurrencyIntegrationTest 내 H2 DB 데이터 누수 차단
+  - ConcurrencyIntegrationTest 실행 시 생성된 가상 주문 및 결제 데이터가 DB 테이블에 잔존해 타 테스트의 집계 검증을 방해하던 문제를 해결했습니다.
+  - setUp 단계에서 pointHistoryRepository와 orderRepository의 deleteAll() 처리를 적용하여 테스트 간 완벽한 격리를 보장했습니다 (ADR-004 준수).
+* **[FEAT]** OptimisticLockRetryAspect 내 Slf4j 로깅 보강
+  - 낙관적 락 실패 시도 횟수, 대상 메서드 시그니처 및 임의의 지터 백오프 시간 정보를 Slf4j warn 로그로 기록하고, 재시도 횟수 초과 시 error 로그를 찍도록 고도화했습니다.
+
 ### 16:32 | AOP 기반 선언적 재시도 메커니즘 리팩토링 (피드백 반영)
 * **[REFACTOR]** 컨트롤러 청결화 및 선언적 애너테이션(@RetryOnCollision) 전환
   - 컨트롤러 내 수동 람다 실행기(OptimisticLockRetryExecutor) 및 주입 의존성을 완전히 제거하여, 컨트롤러의 본연 역할에만 충실하도록 개선했습니다 (컨벤션 6.2 준수).
