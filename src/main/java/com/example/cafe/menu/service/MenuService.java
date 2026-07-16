@@ -31,4 +31,8 @@ public class MenuService {
         return menuRepository.findById(menuId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_AVAILABLE));
     }
+
+    public List<Menu> getMenus(List<Long> menuIds) {
+        return menuRepository.findAllById(menuIds);
+    }
 }

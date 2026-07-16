@@ -8,6 +8,7 @@ import com.example.cafe.order.domain.Order;
 import com.example.cafe.order.domain.OrderItem;
 import com.example.cafe.order.domain.OrderStatus;
 import com.example.cafe.order.dto.OrderCreateRequest;
+import com.example.cafe.order.dto.OrderDetailResponse;
 import com.example.cafe.order.dto.OrderResponse;
 import com.example.cafe.order.event.OrderCompletedEvent;
 import com.example.cafe.order.service.OrderService;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -70,6 +73,37 @@ public class OrderFacade {
         eventPublisher.publishEvent(new OrderCompletedEvent(savedOrder.getId()));
 
         return OrderResponse.from(savedOrder);
+    }
+
+    public OrderDetailResponse getOrderDetail(Long orderId, Long loginMemberId) {
+        Order order = orderService.getOrderAndValidate(orderId, loginMemberId);
+
+        List<Long> menuIds = order.getOrderItems().stream()
+                .map(OrderItem::getMenuId)
+                .distinct()
+                .toList();
+
+        Map<Long, String> menuNameMap = menuService.getMenus(menuIds).stream()
+                .collect(Collectors.toMap(Menu::getId, Menu::getName));
+
+        List<OrderDetailResponse.OrderItemResponse> itemResponses = order.getOrderItems().stream()
+                .map(item -> OrderDetailResponse.OrderItemResponse.builder()
+                        .menuId(item.getMenuId())
+                        .name(menuNameMap.getOrDefault(item.getMenuId(), "알 수 없는 메뉴"))
+                        .temperature(item.getTemperature())
+                        .quantity(item.getQuantity())
+                        .price(item.getPrice())
+                        .build())
+                .toList();
+
+        return OrderDetailResponse.builder()
+                .orderId(order.getId())
+                .memberId(order.getMemberId())
+                .totalPrice(order.getTotalPrice())
+                .status(order.getStatus())
+                .createdAt(order.getCreatedAt())
+                .orderItems(itemResponses)
+                .build();
     }
 
     private static class OrderItemTempInfo {

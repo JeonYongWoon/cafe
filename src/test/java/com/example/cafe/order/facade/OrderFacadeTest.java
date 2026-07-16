@@ -11,9 +11,11 @@ import com.example.cafe.order.domain.Order;
 import com.example.cafe.order.domain.OrderStatus;
 import com.example.cafe.order.domain.Temperature;
 import com.example.cafe.order.dto.OrderCreateRequest;
+import com.example.cafe.order.dto.OrderDetailResponse;
 import com.example.cafe.order.dto.OrderResponse;
 import com.example.cafe.order.service.OrderService;
 import com.example.cafe.point.service.PointService;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -207,5 +209,69 @@ class OrderFacadeTest {
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MENU_NOT_AVAILABLE);
 
         verify(orderService, never()).saveOrder(any());
+    }
+
+    @Test
+    void getOrderDetailSuccess() {
+        Long orderId = 10023L;
+        Long memberId = 1L;
+
+        Order order = Order.builder()
+                .memberId(memberId)
+                .totalPrice(14000L)
+                .status(OrderStatus.RECEIVED)
+                .build();
+        ReflectionTestUtils.setField(order, "id", orderId);
+
+        com.example.cafe.order.domain.OrderItem orderItem1 = com.example.cafe.order.domain.OrderItem.builder()
+                .order(order)
+                .menuId(1L)
+                .temperature(Temperature.ICE)
+                .quantity(2)
+                .price(4500L)
+                .build();
+
+        com.example.cafe.order.domain.OrderItem orderItem2 = com.example.cafe.order.domain.OrderItem.builder()
+                .order(order)
+                .menuId(2L)
+                .temperature(Temperature.HOT)
+                .quantity(1)
+                .price(5000L)
+                .build();
+
+        order.addOrderItem(orderItem1);
+        order.addOrderItem(orderItem2);
+
+        Menu menu1 = Menu.builder()
+                .name("아메리카노")
+                .price(4500L)
+                .status(MenuStatus.AVAILABLE)
+                .build();
+        ReflectionTestUtils.setField(menu1, "id", 1L);
+
+        Menu menu2 = Menu.builder()
+                .name("카페라떼")
+                .price(5000L)
+                .status(MenuStatus.AVAILABLE)
+                .build();
+        ReflectionTestUtils.setField(menu2, "id", 2L);
+
+        when(orderService.getOrderAndValidate(orderId, memberId)).thenReturn(order);
+        when(menuService.getMenus(List.of(1L, 2L))).thenReturn(List.of(menu1, menu2));
+
+        OrderDetailResponse response = orderFacade.getOrderDetail(orderId, memberId);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getOrderId()).isEqualTo(orderId);
+        assertThat(response.getMemberId()).isEqualTo(memberId);
+        assertThat(response.getTotalPrice()).isEqualTo(14000L);
+        assertThat(response.getStatus()).isEqualTo(OrderStatus.RECEIVED);
+        assertThat(response.getOrderItems()).hasSize(2);
+        assertThat(response.getOrderItems().get(0).getName()).isEqualTo("아메리카노");
+        assertThat(response.getOrderItems().get(0).getQuantity()).isEqualTo(2);
+        assertThat(response.getOrderItems().get(0).getPrice()).isEqualTo(4500L);
+        assertThat(response.getOrderItems().get(1).getName()).isEqualTo("카페라떼");
+        assertThat(response.getOrderItems().get(1).getQuantity()).isEqualTo(1);
+        assertThat(response.getOrderItems().get(1).getPrice()).isEqualTo(5000L);
     }
 }

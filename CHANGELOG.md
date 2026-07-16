@@ -2,6 +2,26 @@
 
 ---
 
+## 2026-07-16
+
+### 12:40 | 주문 상세 조회 API 구현 (피드백 반영 개정)
+* **[FEAT]** Bounded Context 격리를 반영한 주문 상세 조회 구현 (GET /orders/{orderId})
+  - OrderService가 타 도메인 Repository(MenuRepository)를 직접 의존하지 않도록 분리하고, OrderFacade가 OrderService(인가 검증 완료된 주문 획득)와 MenuService(메뉴 일괄 조회)를 조율하여 최종 DTO를 빌드 및 반환하도록 책임을 격리했습니다.
+  - 헤더 X-Member-Id 또는 쿼리 파라미터 memberId를 통해 현재 로그인한 사용자 식별값을 제공받아 본인의 주문 정보와 대조하도록 구현했습니다.
+* **[FEAT]** 에러 코드 접두사 규칙 준수 및 예외 추가
+  - ErrorCode에 ORDER_NOT_FOUND (404 Not Found) 및 ORDER_UNAUTHORIZED_ACCESS (403 Forbidden)를 추가 정의하여 도메인 접두사 규칙(ORDER_)을 일치시켰습니다.
+* **[PERF]** Fetch Join 및 IN 쿼리를 통한 N+1 쿼리 최적화
+  - OrderRepository에 findByIdWithOrderItems 메서드를 추가하여 Order와 OrderItem을 Fetch Join으로 한 번에 로드했습니다.
+  - MenuService에 getMenus 메서드를 추가해 연계된 menuId들을 IN 쿼리로 한 번에 일괄 조회하여 N+1 성능 저하 문제를 예방했습니다.
+* **[SEC]** 식별자 파라미터 양수 방어 검증 도입
+  - OrderController에 @Validated 및 경로 변수 orderId에 @Positive 애너테이션을 달아 유효하지 않은 식별자(0 이하, 음수) 인입에 대한 DB 조회를 원천 차단했습니다.
+* **[TEST]** 주문 상세 조회 기능 테스트 검증 완료
+  - OrderServiceTest: getOrderAndValidate 메서드의 성공 및 실패 예외 상황들을 검증하는 단위 테스트를 보완했습니다.
+  - OrderFacadeTest: getOrderDetailSuccess 등 퍼사드 레이어의 DTO 맵핑 조합 비즈니스 로직을 검증하는 테스트를 추가했습니다.
+  - OrderControllerTest: GET /orders/{orderId} 성공 및 실패 케이스를 OrderFacade 목킹으로 원복하여 검증하는 테스트를 갱신했습니다.
+
+---
+
 ## 2026-07-15
 
 ### 17:00 | 프로젝트 문서 구조 개편 및 에이전트 오케스트레이션 규칙 정립
