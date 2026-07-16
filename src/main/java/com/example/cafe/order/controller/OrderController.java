@@ -32,6 +32,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
+    @com.example.cafe.global.util.RetryOnCollision
     public ApiResponse<OrderResponse> createOrder(@Valid @RequestBody OrderCreateRequest request) {
         OrderResponse response = orderFacade.createOrder(request);
         return ApiResponse.success(response);

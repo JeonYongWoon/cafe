@@ -55,6 +55,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(response);
     }
 
+    @ExceptionHandler({
+        org.springframework.orm.ObjectOptimisticLockingFailureException.class,
+        org.springframework.dao.OptimisticLockingFailureException.class
+    })
+    public ResponseEntity<ApiResponse<?>> handleOptimisticLockingFailureException(Exception e) {
+        ErrorCode errorCode = ErrorCode.SYSTEM_CONCURRENCY_ERROR;
+        ApiResponse<?> response = ApiResponse.fail(errorCode.getCode(), errorCode.getMessage());
+        return ResponseEntity
+                .status(errorCode.getHttpStatus())
+                .body(response);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleException(Exception e) {
         ApiResponse<?> response = ApiResponse.fail("INTERNAL_SERVER_ERROR", "서버 내부 오류가 발생했습니다.");

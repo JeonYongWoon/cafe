@@ -4,6 +4,25 @@
 
 ## 2026-07-16
 
+### 16:32 | AOP 기반 선언적 재시도 메커니즘 리팩토링 (피드백 반영)
+* **[REFACTOR]** 컨트롤러 청결화 및 선언적 애너테이션(@RetryOnCollision) 전환
+  - 컨트롤러 내 수동 람다 실행기(OptimisticLockRetryExecutor) 및 주입 의존성을 완전히 제거하여, 컨트롤러의 본연 역할에만 충실하도록 개선했습니다 (컨벤션 6.2 준수).
+  - 컨트롤러의 chargePoint 및 createOrder 메서드 상단에 @RetryOnCollision 애너테이션을 부착하여 동시성 실패 시의 재시도를 선언적으로 명시했습니다.
+* **[FEAT]** AOP 기반 OptimisticLockRetryAspect 구현
+  - build.gradle에 spring-boot-starter-aop 의존성을 수용하고, @RetryOnCollision 애너테이션을 가로채어 백오프 지터(30~70ms 무작위 대기)와 함께 최대 15회 자동 재시도하는 공통 Aspect 컴포넌트를 구축했습니다.
+
+### 16:30 | 동시성 이슈 대응 및 검증 통합 테스트 구현
+* **[FEAT]** 낙관적 락 재시도 헬퍼 클래스(OptimisticLockRetryExecutor) 구현
+  - JPA 낙관적 락 충돌 시 백오프 대기 및 지터(Jitter, 30~70ms 무작위 대기)를 가미하여 최대 15회 재시도하는 공통 실행기 유틸리티를 작성했습니다.
+* **[FEAT]** 포인트 충전 및 주문 결제 API 재시도 로직 도입
+  - PointController와 OrderController의 진입점(Controller 계층)에 OptimisticLockRetryExecutor를 적용하여, 트랜잭션 경계 밖에서 안정적으로 재시도가 일어나도록 조치했습니다.
+* **[FEAT]** 에러 코드 표준화 및 글로벌 예외 핸들링 보강
+  - ErrorCode enum에 SYSTEM_CONCURRENCY_ERROR(409 Conflict) 에러 코드를 새로 할당했습니다.
+  - GlobalExceptionHandler에 ObjectOptimisticLockingFailureException 및 OptimisticLockingFailureException 예외 핸들러를 추가하여, 재시도 횟수 초과 시 최종적으로 409 Conflict 응답을 클라이언트에게 정상 노출하도록 구현했습니다.
+* **[TEST]** 멀티스레드 기반 동시성 검증 통합 테스트(ConcurrencyIntegrationTest) 신규 구축
+  - H2 인메모리 실제 DB 환경 하에 CountDownLatch와 ExecutorService를 활용하여 동시에 발생하는 10개의 포인트 충전 요청과 5개의 주문 결제 요청이 데이터 유실 및 정합성 훼손 없이 모두 성공함을 증명하는 통합 테스트를 통과시켰습니다.
+
+
 ### 16:22 | 관리자용 주문 상태 변경 API 구현
 * **[FEAT]** 주문 상태 순차 전이 검증 비즈니스 로직 구현
   - Order 엔티티 내에 setter를 원천 금지하고, 주문 상태 전이 규칙(RECEIVED -> PREPARING -> READY_FOR_PICKUP -> COMPLETED)을 검증하는 updateStatus 메서드를 구현했습니다.

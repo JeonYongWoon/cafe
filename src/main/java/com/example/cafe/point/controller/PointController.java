@@ -20,6 +20,7 @@ public class PointController {
     private final PointService pointService;
 
     @PostMapping("/charge")
+    @com.example.cafe.global.util.RetryOnCollision
     public ResponseEntity<ApiResponse<PointChargeResponse>> chargePoint(@RequestBody @Valid PointChargeRequest request) {
         PointChargeResponse response = pointService.chargePoint(request);
         return ResponseEntity.ok(ApiResponse.success(response));

@@ -14,7 +14,8 @@ public enum ErrorCode {
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_NOT_FOUND", "해당 주문을 찾을 수 없습니다."),
     ORDER_UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "ORDER_UNAUTHORIZED_ACCESS", "본인의 주문 내역만 조회할 수 있습니다."),
     ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "ORDER_INVALID_STATUS", "올바르지 않은 주문 상태 전이입니다."),
-    SYSTEM_INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "SYSTEM_INVALID_INPUT_VALUE", "입력값이 올바르지 않습니다.");
+    SYSTEM_INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "SYSTEM_INVALID_INPUT_VALUE", "입력값이 올바르지 않습니다."),
+    SYSTEM_CONCURRENCY_ERROR(HttpStatus.CONFLICT, "SYSTEM_CONCURRENCY_ERROR", "동시 요청으로 처리가 실패했습니다. 잠시 후 다시 시도해 주세요.");
 
     private final HttpStatus httpStatus;
     private final String code;
