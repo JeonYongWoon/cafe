@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SessionCreateResponse {
+public class SessionCreateResponse implements java.io.Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private Long memberId;
     private String username;

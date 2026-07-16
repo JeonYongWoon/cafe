@@ -4,6 +4,14 @@
 
 ## 2026-07-16
 
+### 18:13 | Redis 세션 직렬화 구현 및 에러 엔드포인트 예외 처리 개정
+* **[FEAT]** Redis 세션 클러스터링을 위한 직렬화 적용
+  - Redis 세션 저장소 내에 로그인 회원 정보를 안전하게 보관할 수 있도록 RedisSessionConfig 설정을 활성화하고 SessionCreateResponse DTO에 Serializable 인터페이스를 확장 구현했습니다.
+* **[BUG]** 인터셉터 내 /error 엔드포인트 필터링 제외
+  - Spring Boot 내부 에러 디스패칭 시 호출되는 /error 경로를 WebConfig 내 인터셉터 검증 대상에서 제외함으로써, 권한이 끊긴 상태의 오류 코드 응답 차단 마스킹 버그를 해결했습니다.
+* **[FEAT]** 도커 컴포즈 캐릭터셋 튜닝
+  - docker-compose.yml 파일 내 mysql 컨테이너 커맨드 인자에 utf8mb4 및 utf8mb4_unicode_ci 인코딩 튜닝을 명문화하여 적용했습니다.
+
 ### 17:57 | README.md 내 k6 부하 테스트 가이드 바로가기 링크 추가
 * **[DOCS]** README.md 관련 문서 목록 업데이트
   - docs/k6/LOAD_TEST.md 경로의 부하 테스트 성능 가이드 문서 바로가기 링크를 README.md 관련 문서 목록에 연동하여 문서 검색 접근성을 확보했습니다.
