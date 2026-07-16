@@ -10,6 +10,7 @@ import com.example.cafe.menu.service.MenuService;
 import com.example.cafe.order.domain.Order;
 import com.example.cafe.order.domain.OrderStatus;
 import com.example.cafe.order.domain.Temperature;
+import com.example.cafe.order.dto.AdminOrderResponse;
 import com.example.cafe.order.dto.OrderCreateRequest;
 import com.example.cafe.order.dto.OrderDetailResponse;
 import com.example.cafe.order.dto.OrderResponse;
@@ -23,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
+import java.time.LocalDateTime;
 
 import java.util.Arrays;
 
@@ -273,5 +275,35 @@ class OrderFacadeTest {
         assertThat(response.getOrderItems().get(1).getName()).isEqualTo("카페라떼");
         assertThat(response.getOrderItems().get(1).getQuantity()).isEqualTo(1);
         assertThat(response.getOrderItems().get(1).getPrice()).isEqualTo(5000L);
+    }
+
+    @Test
+    void getAllOrdersForAdminSuccess() {
+        Order order = Order.builder()
+                .memberId(1L)
+                .totalPrice(14000L)
+                .status(OrderStatus.RECEIVED)
+                .build();
+        ReflectionTestUtils.setField(order, "id", 10023L);
+        ReflectionTestUtils.setField(order, "createdAt", LocalDateTime.of(2026, 7, 13, 16, 20, 0));
+
+        Member member = Member.builder()
+                .username("user123")
+                .password("password")
+                .pointBalance(10000L)
+                .build();
+        ReflectionTestUtils.setField(member, "id", 1L);
+
+        when(orderService.getAllOrders()).thenReturn(List.of(order));
+        when(memberService.getMembers(List.of(1L))).thenReturn(List.of(member));
+
+        List<AdminOrderResponse> responses = orderFacade.getAllOrdersForAdmin();
+
+        assertThat(responses).hasSize(1);
+        assertThat(responses.get(0).getOrderId()).isEqualTo(10023L);
+        assertThat(responses.get(0).getUsername()).isEqualTo("user123");
+        assertThat(responses.get(0).getTotalPrice()).isEqualTo(14000L);
+        assertThat(responses.get(0).getStatus()).isEqualTo(OrderStatus.RECEIVED);
+        assertThat(responses.get(0).getCreatedAt()).isEqualTo(LocalDateTime.of(2026, 7, 13, 16, 20, 0));
     }
 }

@@ -4,6 +4,19 @@
 
 ## 2026-07-16
 
+### 16:08 | 관리자용 전체 주문 조회 API 구현
+* **[FEAT]** 식별자 직접 참조 아키텍처 규칙 및 바운디드 컨텍스트 격리 준수 설계
+  - Order 엔티티에서 Member 객체 직접 참조(@ManyToOne)를 완전히 배제하여 식별자 직접 참조(memberId)를 기본 원칙으로 유지함으로써 아키텍처 결합도를 최소화했습니다.
+  - 어드민 전체 주문 조회 시 OrderService가 타 도메인에 접근하지 않도록 격리하고, 조율 계층인 OrderFacade가 OrderService(최신순 주문 목록 조회)와 MemberService(IN 쿼리를 통한 회원 목록 조회)를 연계해 데이터를 최종 DTO로 변환하도록 구현했습니다.
+* **[FEAT]** MemberService 다수 ID 일괄 조회 기능 추가
+  - N+1 문제를 근본적으로 방지하기 위해 MemberRepository의 findAllById(memberIds)를 활용하여 대량의 회원 이름 데이터를 IN 쿼리로 한 번에 획득하는 getMembers(memberIds) 비즈니스 로직을 구축했습니다.
+* **[API]** GET /admin/orders 관리자 주문 목록 조회 API 구현
+  - 관리자가 전체 주문 목록을 최신순(createdAt DESC)으로 조회할 수 있는 전용 엔드포인트를 구현했습니다.
+  - Primary Key 컬럼명 'id'를 식별자 매핑 규칙에 따라 'orderId'로 치환하여 반환하며, 회원의 'username' 필드를 포함시켜 ApiResponse 공통 포맷으로 200 OK 응답 처리합니다.
+* **[TEST]** AdminOrderController 및 API 슬라이스 Mocking 테스트 검증 완료
+  - AdminOrderControllerTest 단독 슬라이스 테스트를 작성하여 MockMvc 환경에서 GET /admin/orders 요청에 대한 성공 코드, DTO 및 ApiResponse 포맷 정상 여부를 완벽히 검증했습니다.
+  - OrderFacadeTest에 getAllOrdersForAdminSuccess 테스트를 추가하여, 퍼사드 레이어에서의 주문 정보와 회원 데이터의 융합 및 매핑 정합성을 단위 검증 완료했습니다.
+
 ### 15:37 | 인기 메뉴 조회 API 구현
 * **[FEAT]** Bounded Context 단방향 의존성 제약 준수 및 설계
   - menu 패키지가 order 패키지를 참조하지 못하는 의존성 제약을 지키기 위해 PopularMenuProvider 인터페이스를 활용한 의존성 역전(DIP)을 구현했습니다.

@@ -7,6 +7,7 @@ import com.example.cafe.menu.service.MenuService;
 import com.example.cafe.order.domain.Order;
 import com.example.cafe.order.domain.OrderItem;
 import com.example.cafe.order.domain.OrderStatus;
+import com.example.cafe.order.dto.AdminOrderResponse;
 import com.example.cafe.order.dto.OrderCreateRequest;
 import com.example.cafe.order.dto.OrderDetailResponse;
 import com.example.cafe.order.dto.OrderResponse;
@@ -104,6 +105,29 @@ public class OrderFacade {
                 .createdAt(order.getCreatedAt())
                 .orderItems(itemResponses)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminOrderResponse> getAllOrdersForAdmin() {
+        List<Order> orders = orderService.getAllOrders();
+
+        List<Long> memberIds = orders.stream()
+                .map(Order::getMemberId)
+                .distinct()
+                .toList();
+
+        Map<Long, String> memberNameMap = memberService.getMembers(memberIds).stream()
+                .collect(Collectors.toMap(Member::getId, Member::getUsername));
+
+        return orders.stream()
+                .map(order -> AdminOrderResponse.builder()
+                        .orderId(order.getId())
+                        .username(memberNameMap.getOrDefault(order.getMemberId(), "알 수 없는 사용자"))
+                        .totalPrice(order.getTotalPrice())
+                        .status(order.getStatus())
+                        .createdAt(order.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private static class OrderItemTempInfo {
