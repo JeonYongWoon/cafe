@@ -1,0 +1,49 @@
+name: k6 Load Test Workflow
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Build and Run Application
+      run: |
+        ./gradlew bootRun > app.log 2>&1 &
+        echo "Spring Boot starting..."
+
+    - name: Wait for Application Start
+      run: |
+        for i in {1..30}; do
+          curl -s http://localhost:8080/menus && break
+          echo "Waiting for app to start..."
+          sleep 2
+        done
+
+    - name: Run k6 Load Test
+      uses: grafana/k6-action@v0.3.1
+      with:
+        filename: k6/load-test.js
+        flags: --env BASE_URL=http://localhost:8080
+
+    - name: Upload Application Log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: spring-boot-app-log
+        path: app.log

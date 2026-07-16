@@ -4,6 +4,25 @@
 
 ## 2026-07-16
 
+### 17:34 | 다중 인스턴스 배포 및 로드 밸런싱을 위한 로컬 Docker 환경 구축
+* **[FEAT]** Docker Compose 기반 멀티 컨테이너 아키텍처 구성
+  - Nginx(로드 밸런서), Spring Boot WAS 인스턴스 2대, MySQL(공용 DB), Redis(공용 세션 저장소)로 구성된 로컬 분산 배포 환경을 정의했습니다.
+* **[FEAT]** Spring Session Redis 의존성 및 Docker 환경 설정 주입
+  - build.gradle에 MySQL 커넥터 및 Spring Session Redis 의존성을 추가했습니다.
+  - 컨테이너 내부 환경에 맞게 MySQL 및 Redis 접속 호스트명을 바인딩하는 application-docker.properties를 생성했습니다.
+* **[FEAT]** Nginx 리버스 프록시 및 로드 밸런서 설정
+  - nginx.conf를 작성하여 포트 80으로 들어오는 모든 사용자 요청을 2대의 백엔드 Spring Boot 컨테이너(app-1, app-2)로 라운드 로빈 방식으로 분산 전달하도록 로드 밸런싱을 적용했습니다.
+
+### 17:27 | k6 부하 테스트 스크립트 및 GitHub Actions 워크플로 구축
+* **[FEAT]** k6 부하 테스트 스크립트 신규 구축
+  - k6/load-test.js 스크립트를 작성하여 전체 메뉴 조회 API(GET /menus) 및 인기 메뉴 조회 API(GET /menus/popular)에 대한 트래픽 부하 테스트 시나리오를 구성했습니다.
+  - 가상 사용자 10명, 30초 지속 및 에러율 1% 미만, 응답속도 p(95) 200ms 이내 등의 성능 임계 기준을 적용했습니다.
+* **[FEAT]** GitHub Actions 워크플로 파일 추가
+  - .github/workflows/k6-load-test.yml 파일을 생성하여 수동 트리거 및 main 브랜치 push 이벤트 발생 시 작동하는 CI 기반의 k6 부하 테스트 워크플로를 구축했습니다.
+  - 워크플로 내에서 JDK 17 설정, Gradle 빌드, Spring Boot 백그라운드 구동, 헬스체크 대기 및 k6 부하 테스트 구동 단계를 정의하고 최종 애플리케이션 로그 아티팩트를 보존하도록 설정했습니다.
+* **[FEAT]** k6 부하 테스트 가이드 문서 생성
+  - docs/k6/LOAD_TEST.md 경로에 k6 설치 방법, 실행 방법(로컬 및 CI), 최근 테스트 결과 등을 종합한 성능 가이드 문서를 추가했습니다.
+
 ### 17:10 | 장바구니/포인트 충전 비로그인 접근 차단 및 관리자 권한 제어 고도화
 * **[FEAT]** 세션 기반 로그인 인증 및 관리자 인가 차단 인터셉터 구현
   - 회원 도메인에 MemberRole(USER, ADMIN)을 추가하고 엔티티 및 SessionCreateResponse 응답 DTO에 반영했습니다.
