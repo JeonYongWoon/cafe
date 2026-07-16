@@ -170,5 +170,11 @@ docker compose up --build
 ```
 모든 컨테이너가 정상 기동되면 웹 브라우저에서 http://localhost/index.html (포트 80) 주소로 접속하여 로드밸런싱이 적용된 환경에서 프론트엔드 페이지를 테스트할 수 있습니다.
 
+---
+##### 어드민 계정
+ID) admin
+PW) admin123
+---
+
 
 
