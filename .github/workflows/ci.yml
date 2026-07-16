@@ -17,6 +17,18 @@ jobs:
     # 실행 환경으로 최신 버전의 Ubuntu 리눅스 이미지를 사용합니다.
     runs-on: ubuntu-latest
 
+    # 테스트 실행 시 Redis 연결이 필요하므로 Redis 서비스 컨테이너를 함께 기동합니다.
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     # 저장소의 코드를 가상 환경으로 가져옵니다.
     - name: 코드 체크아웃

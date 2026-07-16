@@ -4,6 +4,12 @@
 
 ## 2026-07-16
 
+### 18:19 | CI 워크플로 Redis 서비스 컨테이너 추가 및 빌드 실패 수정
+* **[BUG]** GitHub Actions CI 빌드 실패 원인 수정
+  - @EnableRedisHttpSession 선언으로 인해 테스트 컨텍스트 로드 시 Redis 연결을 시도하나, CI 러너에 Redis가 없어 전체 빌드가 실패하는 문제를 확인했습니다.
+  - .github/workflows/ci.yml의 jobs.build 하위에 services 블록을 추가하여 redis:7 이미지를 6379 포트로 기동하고 헬스체크를 설정했습니다.
+  - application.properties에 spring.data.redis.host=localhost 및 spring.data.redis.port=6379 기본 연결 설정을 추가했습니다.
+
 ### 18:13 | Redis 세션 직렬화 구현 및 에러 엔드포인트 예외 처리 개정
 * **[FEAT]** Redis 세션 클러스터링을 위한 직렬화 적용
   - Redis 세션 저장소 내에 로그인 회원 정보를 안전하게 보관할 수 있도록 RedisSessionConfig 설정을 활성화하고 SessionCreateResponse DTO에 Serializable 인터페이스를 확장 구현했습니다.
