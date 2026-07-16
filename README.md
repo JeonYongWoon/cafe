@@ -22,6 +22,7 @@
 - [AI 실수 사전 (ai_common_mistakes.md)](./docs/ai_common_mistakes.md)
 - [리뷰 및 검증 로그 템플릿 (review_log_template.md)](./docs/review_log_template.md)
 - [안전 정지 리포트 템플릿 (safety_stop_template.md)](./docs/safety_stop_template.md)
+- [k6 부하 테스트 가이드 (LOAD_TEST.md)](./docs/k6/LOAD_TEST.md)
 
 ---
 
