@@ -1,7 +1,11 @@
 # jeonscafe 커피숍 주문 시스템
 
 본 프로젝트는 스프링 부트(Spring Boot)와 JPA를 기반으로 구축된 분산 환경 친화적인 커피숍 주문 및 결제 시스템입니다. 안전한 포인트 기반 결제 시스템과 동시성 제어 기술을 특징으로 합니다.
+---
 
+## 프론트엔드 UI 예시
+
+![JEONS CAFE 프론트엔드 UI](./docs/images/cafe_web_ui.png)
 ---
 
 ## 관련 문서 바로가기
@@ -166,7 +170,5 @@ docker compose up --build
 ```
 모든 컨테이너가 정상 기동되면 웹 브라우저에서 http://localhost/index.html (포트 80) 주소로 접속하여 로드밸런싱이 적용된 환경에서 프론트엔드 페이지를 테스트할 수 있습니다.
 
-## 프론트엔드 UI 예시
 
-![JEONS CAFE 프론트엔드 UI](./docs/images/cafe_web_ui.png)
 
