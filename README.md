@@ -147,3 +147,26 @@ erDiagram
 #### 컨텍스트 라우팅 (Context Routing) 규칙
 - **URI 경로 분리**: API 경로 세그먼트의 첫 단어로 진입할 바운디드 컨텍스트 이름을 명시합니다. (예: `/menus/**`, `/orders/**`, `/points/**`)
 - **컨트롤러 위임 한계**: 컨트롤러는 요청 검증과 응답 변환만 담당하며 핵심 비즈니스 로직은 도메인 컨텍스트 내의 서비스 레이어로 즉시 라우팅해야 합니다.
+
+---
+
+## 로컬 테스트 및 구동 방법
+
+### 1. 단일 백엔드 서버 구동 (H2 인메모리 DB)
+로컬에 Java 17이 설치되어 있어야 합니다. 터미널에서 다음 명령어를 실행합니다.
+```bash
+./gradlew bootRun
+```
+서버가 성공적으로 구동되면 웹 브라우저에서 http://localhost:8080/index.html 주소로 접속하여 프론트엔드 페이지를 테스트할 수 있습니다.
+
+### 2. 멀티 컨테이너 환경 구동 (Docker Compose)
+Docker 및 Docker Compose가 설치되어 있어야 합니다. 터미널에서 다음 명령어를 실행합니다.
+```bash
+docker compose up --build
+```
+모든 컨테이너가 정상 기동되면 웹 브라우저에서 http://localhost/index.html (포트 80) 주소로 접속하여 로드밸런싱이 적용된 환경에서 프론트엔드 페이지를 테스트할 수 있습니다.
+
+## 프론트엔드 UI 예시
+
+![JEONS CAFE 프론트엔드 UI](./docs/images/cafe_web_ui.png)
+
