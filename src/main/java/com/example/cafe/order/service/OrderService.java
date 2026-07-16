@@ -3,6 +3,8 @@ package com.example.cafe.order.service;
 import com.example.cafe.global.error.CustomException;
 import com.example.cafe.global.error.ErrorCode;
 import com.example.cafe.order.domain.Order;
+import com.example.cafe.order.domain.OrderStatus;
+import com.example.cafe.order.dto.OrderStatusUpdateResponse;
 import com.example.cafe.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,5 +36,13 @@ public class OrderService {
 
     public List<Order> getAllOrders() {
         return orderRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    @Transactional
+    public OrderStatusUpdateResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+        order.updateStatus(newStatus);
+        return OrderStatusUpdateResponse.from(order);
     }
 }

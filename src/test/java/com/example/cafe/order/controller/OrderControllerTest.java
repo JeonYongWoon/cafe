@@ -8,7 +8,10 @@ import com.example.cafe.order.domain.Temperature;
 import com.example.cafe.order.dto.OrderCreateRequest;
 import com.example.cafe.order.dto.OrderDetailResponse;
 import com.example.cafe.order.dto.OrderResponse;
+import com.example.cafe.order.dto.OrderStatusUpdateRequest;
+import com.example.cafe.order.dto.OrderStatusUpdateResponse;
 import com.example.cafe.order.facade.OrderFacade;
+import com.example.cafe.order.service.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -30,6 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -44,6 +48,9 @@ class OrderControllerTest {
 
     @Mock
     private OrderFacade orderFacade;
+
+    @Mock
+    private OrderService orderService;
 
     @InjectMocks
     private OrderController orderController;
@@ -273,5 +280,75 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.data").isEmpty())
                 .andExpect(jsonPath("$.error.code").value("ORDER_UNAUTHORIZED_ACCESS"))
                 .andExpect(jsonPath("$.error.message").value("본인의 주문 내역만 조회할 수 있습니다."));
+    }
+
+    @Test
+    void updateOrderStatusSuccess() throws Exception {
+        OrderStatusUpdateRequest request = new OrderStatusUpdateRequest(OrderStatus.PREPARING);
+        OrderStatusUpdateResponse response = OrderStatusUpdateResponse.builder()
+                .orderId(10023L)
+                .status(OrderStatus.PREPARING)
+                .updatedAt(LocalDateTime.of(2026, 7, 13, 16, 32, 0))
+                .build();
+
+        when(orderService.updateOrderStatus(10023L, OrderStatus.PREPARING)).thenReturn(response);
+
+        mockMvc.perform(patch("/orders/10023/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.orderId").value(10023))
+                .andExpect(jsonPath("$.data.status").value("PREPARING"))
+                .andExpect(jsonPath("$.data.updatedAt").value("2026-07-13T16:32:00"))
+                .andExpect(jsonPath("$.error").isEmpty());
+    }
+
+    @Test
+    void updateOrderStatusFailOrderNotFound() throws Exception {
+        OrderStatusUpdateRequest request = new OrderStatusUpdateRequest(OrderStatus.PREPARING);
+
+        when(orderService.updateOrderStatus(9999L, OrderStatus.PREPARING))
+                .thenThrow(new CustomException(ErrorCode.ORDER_NOT_FOUND));
+
+        mockMvc.perform(patch("/orders/9999/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.data").isEmpty())
+                .andExpect(jsonPath("$.error.code").value("ORDER_NOT_FOUND"))
+                .andExpect(jsonPath("$.error.message").value("해당 주문을 찾을 수 없습니다."));
+    }
+
+    @Test
+    void updateOrderStatusFailInvalidStatus() throws Exception {
+        String invalidRequestJson = "{\"status\": \"INVALID_STATUS\"}";
+
+        mockMvc.perform(patch("/orders/10023/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidRequestJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.data").isEmpty())
+                .andExpect(jsonPath("$.error.code").value("ORDER_INVALID_STATUS"))
+                .andExpect(jsonPath("$.error.message").value("올바르지 않은 주문 상태입니다."));
+    }
+
+    @Test
+    void updateOrderStatusFailInvalidTransition() throws Exception {
+        OrderStatusUpdateRequest request = new OrderStatusUpdateRequest(OrderStatus.COMPLETED);
+
+        when(orderService.updateOrderStatus(10023L, OrderStatus.COMPLETED))
+                .thenThrow(new CustomException(ErrorCode.ORDER_INVALID_STATUS));
+
+        mockMvc.perform(patch("/orders/10023/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.data").isEmpty())
+                .andExpect(jsonPath("$.error.code").value("ORDER_INVALID_STATUS"))
+                .andExpect(jsonPath("$.error.message").value("올바르지 않은 주문 상태 전이입니다."));
     }
 }

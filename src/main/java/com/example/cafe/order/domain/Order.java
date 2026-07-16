@@ -59,4 +59,25 @@ public class Order {
     public void addOrderItem(OrderItem orderItem) {
         this.orderItems.add(orderItem);
     }
+
+    public void updateStatus(OrderStatus status) {
+        if (!isTransitionAllowed(this.status, status)) {
+            throw new com.example.cafe.global.error.CustomException(com.example.cafe.global.error.ErrorCode.ORDER_INVALID_STATUS);
+        }
+        this.status = status;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    private boolean isTransitionAllowed(OrderStatus current, OrderStatus next) {
+        if (current == OrderStatus.RECEIVED && next == OrderStatus.PREPARING) {
+            return true;
+        }
+        if (current == OrderStatus.PREPARING && next == OrderStatus.READY_FOR_PICKUP) {
+            return true;
+        }
+        if (current == OrderStatus.READY_FOR_PICKUP && next == OrderStatus.COMPLETED) {
+            return true;
+        }
+        return false;
+    }
 }

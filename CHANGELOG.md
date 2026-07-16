@@ -4,6 +4,18 @@
 
 ## 2026-07-16
 
+### 16:22 | 관리자용 주문 상태 변경 API 구현
+* **[FEAT]** 주문 상태 순차 전이 검증 비즈니스 로직 구현
+  - Order 엔티티 내에 setter를 원천 금지하고, 주문 상태 전이 규칙(RECEIVED -> PREPARING -> READY_FOR_PICKUP -> COMPLETED)을 검증하는 updateStatus 메서드를 구현했습니다.
+  - 전이 룰 위반 시 CustomException(ErrorCode.ORDER_INVALID_STATUS) 예외를 발생시키도록 안전장치를 설계했습니다.
+* **[FEAT]** 에러 코드 표준화 및 글로벌 예외 핸들링 견고화
+  - 주문 관련 에러 접두사 규칙(ORDER_)을 준수하여 ORDER_INVALID_STATUS 에러 코드를 ErrorCode enum에 정의했습니다.
+  - GlobalExceptionHandler에 HttpMessageNotReadableException 처리 핸들러를 보강하여 잘못된 문자열의 Enum 변환 오류(InvalidFormatException)가 발생했을 때도 리플렉션을 통해 유연하게 ORDER_INVALID_STATUS 에러 코드로 변환해 반환하도록 구현했습니다.
+* **[API]** PATCH /orders/{orderId}/status 주문 상태 변경 API 구현
+  - 관리자가 특정 주문의 진행 상태를 전환하고, 변경된 주문 ID(orderId), 상태(status), 갱신시각(updatedAt)을 ApiResponse 공통 성공 포맷으로 반환하는 API 핸들러를 구현했습니다.
+* **[TEST]** MockMvc 슬라이스 테스트 확충 및 전체 성공 확인
+  - OrderControllerTest 내에 주문 상태 변경 성공 케이스, 미존재 주문 대상 호출 실패 케이스, 잘못된 문자열 바인딩 실패 케이스, 규칙 위반 전이 실패 케이스를 모두 구현하여 빌드 테스트를 완벽하게 통과(BUILD SUCCESSFUL)시켰습니다.
+
 ### 16:08 | 관리자용 전체 주문 조회 API 구현
 * **[FEAT]** 식별자 직접 참조 아키텍처 규칙 및 바운디드 컨텍스트 격리 준수 설계
   - Order 엔티티에서 Member 객체 직접 참조(@ManyToOne)를 완전히 배제하여 식별자 직접 참조(memberId)를 기본 원칙으로 유지함으로써 아키텍처 결합도를 최소화했습니다.

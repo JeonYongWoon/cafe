@@ -36,6 +36,25 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(response);
     }
     
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<?>> handleHttpMessageNotReadableException(org.springframework.http.converter.HttpMessageNotReadableException e) {
+        String code = "SYSTEM_INVALID_INPUT_VALUE";
+        String message = "입력값이 올바르지 않습니다.";
+        if (e.getCause() != null && e.getCause().getClass().getSimpleName().equals("InvalidFormatException")) {
+            try {
+                java.lang.reflect.Method getTargetTypeMethod = e.getCause().getClass().getMethod("getTargetType");
+                Class<?> targetType = (Class<?>) getTargetTypeMethod.invoke(e.getCause());
+                if (targetType != null && targetType.isEnum()) {
+                    code = "ORDER_INVALID_STATUS";
+                    message = "올바르지 않은 주문 상태입니다.";
+                }
+            } catch (Exception ex) {
+            }
+        }
+        ApiResponse<?> response = ApiResponse.fail(code, message);
+        return ResponseEntity.badRequest().body(response);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleException(Exception e) {
         ApiResponse<?> response = ApiResponse.fail("INTERNAL_SERVER_ERROR", "서버 내부 오류가 발생했습니다.");
