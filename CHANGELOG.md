@@ -2,6 +2,25 @@
 
 ---
 
+## 2026-07-18
+
+### 18:10 | 카프카 실습 인프라 구축 및 스프링 카프카 연동 설정
+* **[FEAT]** Docker Compose 기반 카프카(Kafka) 및 Kafka UI 서비스 구축
+  - Zookeeper 의존성이 없는 KRaft 모드의 Single Broker 카프카 서비스를 docker-compose.yml에 추가하고 외부 통신 포트 9092로 매핑했습니다.
+  - 카프카 토픽과 메시지를 시각적으로 모니터링할 수 있는 provectuslabs/kafka-ui 컨테이너를 추가하여 호스트 포트 8089로 연동했습니다.
+  - 백엔드 애플리케이션 컨테이너(app-1, app-2) 기동 시 카프카 서버가 선행적으로 준비될 수 있도록 depends_on 의존 목록에 kafka를 추가했습니다.
+  - 사용자 피드백(P3-1)에 따라 컨테이너 환경의 카프카 주소 변경에 유연하게 대응할 수 있도록 app-1, app-2 컨테이너의 environment 목록에 SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092 주입 설정을 추가했습니다.
+* **[FEAT]** Spring Boot Kafka 빌드 의존성 추가
+  - build.gradle 파일의 dependencies 블록에 spring-boot-starter-kafka 스타터 라이브러리를 추가하여 백엔드 내 카프카 연동을 지원하도록 했습니다.
+* **[REFACTOR]** properties 설정 파일들의 application.yml 통합 마이그레이션 및 카프카 기본 설정
+  - 기존 local 환경의 application.properties 및 docker 환경의 application-docker.properties 설정을 단일 application.yml 파일의 멀티 도큐먼트 프로파일(local, docker)로 이전하여 통합했습니다.
+  - application.yml 내에 kafka.bootstrap-servers 접속 주소 정보를 각 프로파일별 환경에 맞게 추가했습니다.
+  - 메시지 직렬화 및 역직렬화 도구로 Jackson JSON Serializer 및 Deserializer(JsonSerializer, JsonDeserializer) 설정을 명시했습니다.
+  - 기본 컨슈머 그룹 아이디를 cafe-group으로 정의하고 신뢰하는 패키지 대상을 전체(*)로 개방했습니다.
+  - 역할을 소진한 기존 application.properties 및 application-docker.properties 파일을 삭제 처리했습니다.
+
+---
+
 ## 2026-07-16
 
 ### 18:19 | CI 워크플로 Redis 서비스 컨테이너 추가 및 빌드 실패 수정

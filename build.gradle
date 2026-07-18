@@ -31,6 +31,7 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.session:spring-session-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-kafka'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'com.fasterxml.jackson.core:jackson-databind'
